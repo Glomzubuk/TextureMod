@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,7 +13,6 @@ namespace TextureMod
     public class TextureChanger : MonoBehaviour
     {
         #region General Fields
-        public static string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\";
         private JOFJHDJHJGI gameState;
         private GameMode currentGameMode;
         public string[] debug = new string[20];
@@ -175,18 +175,18 @@ namespace TextureMod
             if (TextureMod.Instance.MMI != null)
             {
                 var mmi = TextureMod.Instance.MMI;
-                holdKey1 = mmi.GetKeyCode(mmi.configKeys["(key)holdToEnableSkinChanger"]);
-                holdKey2 = mmi.GetKeyCode(mmi.configKeys["(key)holdToEnableSkinChanger2"]);
-                setSkinKey = mmi.GetKeyCode(mmi.configKeys["(key)setCustomSkin"]);
-                cancelKey = mmi.GetKeyCode(mmi.configKeys["(key)cancelOpponentCustomSkin"]);
-                reloadCustomSkin = mmi.GetKeyCode(mmi.configKeys["(key)reloadCustomSkin"]);
-                reloadEntireSkinLibrary = mmi.GetKeyCode(mmi.configKeys["(key)reloadEntireSkinLibrary"]);
-                useOnlySetKey = mmi.GetTrueFalse(mmi.configBools["(bool)noHoldMode"]);
-                neverApplyOpponentsSkin = mmi.GetTrueFalse(mmi.configBools["(bool)neverApplyOpponentsSkin"]);
-                showDebugInfo = mmi.GetTrueFalse(mmi.configBools["(bool)showDebugInfo"]);
-                lockButtonsOnRandom = mmi.GetTrueFalse(mmi.configBools["(bool)lockButtonsOnRandom"]);
-                reloadCustomSkinOnInterval = mmi.GetTrueFalse(mmi.configBools["(bool)reloadCustomSkinOnInterval"]);
-                skinReloadIntervalInFrames = mmi.GetSliderValue("(slider)skinReloadIntervalInFrames");
+                holdKey1 = mmi.NewGetKeyCode("holdToEnableSkinChanger");
+                holdKey2 = mmi.NewGetKeyCode("holdToEnableSkinChanger2");
+                setSkinKey = mmi.NewGetKeyCode("setCustomSkin");
+                cancelKey = mmi.NewGetKeyCode("cancelOpponentCustomSkin");
+                reloadCustomSkin = mmi.NewGetKeyCode("reloadCustomSkin");
+                reloadEntireSkinLibrary = mmi.NewGetKeyCode("reloadEntireSkinLibrary");
+                useOnlySetKey = mmi.NewGetTrueFalse("noHoldMode");
+                neverApplyOpponentsSkin = mmi.NewGetTrueFalse("neverApplyOpponentsSkin");
+                showDebugInfo = mmi.NewGetTrueFalse("showDebugInfo");
+                lockButtonsOnRandom = mmi.NewGetTrueFalse("lockButtonsOnRandom");
+                reloadCustomSkinOnInterval = mmi.NewGetTrueFalse("reloadCustomSkinOnInterval");
+                skinReloadIntervalInFrames = mmi.NewGetSliderValue("skinReloadIntervalInFrames");
             }
             #endregion
             #region Set Static Vars
@@ -265,7 +265,7 @@ namespace TextureMod
                     {
                         if (opponentCustomSkinCharacter == packetSkinCharacter || opponentCustomSkinCharacterVariant == packetSkinCharacterVariant)
                         {
-                            opponentCustomTexture = TextureHelper.LoadPNG(Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\opponent.png");
+                            opponentCustomTexture = TextureHelper.LoadPNG(Path.Combine(TextureMod.resourceFolder, "opponent.png"));
                             AssignAshesOutlineColor(opponentCustomTexture, opponentCustomSkinCharacterVariant);
                             packetSkinCharacter = Character.NONE;
                             packetSkinCharacterVariant = CharacterVariant.CORPSE;

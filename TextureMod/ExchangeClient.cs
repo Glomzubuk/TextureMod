@@ -40,7 +40,7 @@ namespace TextureMod
                         string characterVariant = rets[1];
                         string skin = rets[2];
                         byte[] imageData = Convert.FromBase64String(skin);
-                        File.WriteAllBytes(Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\opponent.png", imageData);
+                        File.WriteAllBytes(Path.Combine(TextureMod.resourceFolder, "opponent.png"), imageData);
                         TextureMod.Instance.tc.newSkinToApply = true;
                         TextureMod.Instance.tc.debug[3] = "Got non null skin and set newSkinToApply to true";
                         TextureMod.Instance.tc.opponentCustomSkinCharacter = (Character)Enum.Parse(typeof(Character), character);
