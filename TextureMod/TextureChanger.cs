@@ -3,6 +3,7 @@ using LLGUI;
 using LLHandlers;
 using LLScreen;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,7 +13,6 @@ namespace TextureMod
     public class TextureChanger : MonoBehaviour
     {
         #region General Fields
-        public static string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\";
         private JOFJHDJHJGI gameState;
         private GameMode currentGameMode;
         public string[] debug = new string[20];
@@ -103,17 +103,17 @@ namespace TextureMod
 
         private void Start()
         {
-            candySplashWhite = TextureHelper.LoadPNG(resourceFolder + @"Effects\candySplashWhite.png");
+            candySplashWhite = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\candySplashWhite.png");
 
-            gridStartBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridStartBG.png");
-            gridStartFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridStartFG.png");
-            gridTrail = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridTrail.png");
-            gridArrive = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridArrive.png");
+            gridStartBG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\GridSpecial\gridStartBG.png");
+            gridStartFG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\GridSpecial\gridStartFG.png");
+            gridTrail = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\GridSpecial\gridTrail.png");
+            gridArrive = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\GridSpecial\gridArrive.png");
 
-            bubbleBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubbleBG.png");
-            bubbleFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubbleFG.png");
-            bubblePopBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubblePopBG.png");
-            bubblePopFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubblePopFG.png");
+            bubbleBG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\JetSpecial\bubbleBG.png");
+            bubbleFG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\JetSpecial\bubbleFG.png");
+            bubblePopBG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\JetSpecial\bubblePopBG.png");
+            bubblePopFG = TextureHelper.LoadPNG(TextureMod.resourceFolder + @"Effects\JetSpecial\bubblePopFG.png");
         }
 
         private void OnGUI()
@@ -229,19 +229,19 @@ namespace TextureMod
             if (TextureMod.Instance.MMI != null)
             {
                 var mmi = TextureMod.Instance.MMI;
-                holdKey1 = mmi.GetKeyCode(mmi.configKeys["(key)enableSkinChanger"]);
-                nextSkin = mmi.GetKeyCode(mmi.configKeys["(key)nextSkin"]);
-                previousSkin = mmi.GetKeyCode(mmi.configKeys["(key)previousSkin"]);
-                cancelKey = mmi.GetKeyCode(mmi.configKeys["(key)cancelOpponentCustomSkin"]);
-                reloadCustomSkin = mmi.GetKeyCode(mmi.configKeys["(key)reloadCustomSkin"]);
-                reloadEntireSkinLibrary = mmi.GetKeyCode(mmi.configKeys["(key)reloadEntireSkinLibrary"]);
-                useOnlySetKey = mmi.GetTrueFalse(mmi.configBools["(bool)noHoldMode"]);
-                neverApplyOpponentsSkin = mmi.GetTrueFalse(mmi.configBools["(bool)neverApplyOpponentsSkin"]);
-                showDebugInfo = mmi.GetTrueFalse(mmi.configBools["(bool)showDebugInfo"]);
-                lockButtonsOnRandom = mmi.GetTrueFalse(mmi.configBools["(bool)lockButtonsOnRandom"]);
-                reloadCustomSkinOnInterval = mmi.GetTrueFalse(mmi.configBools["(bool)reloadCustomSkinOnInterval"]);
-                skinReloadIntervalInFrames = mmi.GetSliderValue("(slider)skinReloadIntervalInFrames");
-                assignFirstSkinOnCharacterSelection = mmi.GetTrueFalse(mmi.configBools["(bool)assignFirstSkinOnCharacterSelection"]);
+                holdKey1 = mmi.GetKeyCode("enableSkinChanger");
+                nextSkin = mmi.GetKeyCode("nextSkin");
+                previousSkin = mmi.GetKeyCode("previousSkin");
+                cancelKey = mmi.GetKeyCode("cancelOpponentCustomSkin");
+                reloadCustomSkin = mmi.GetKeyCode("reloadCustomSkin");
+                reloadEntireSkinLibrary = mmi.GetKeyCode("reloadEntireSkinLibrary");
+                useOnlySetKey = mmi.NewGetTrueFalse("noHoldMode");
+                neverApplyOpponentsSkin = mmi.GetTrueFalse("neverApplyOpponentsSkin");
+                showDebugInfo = mmi.GetTrueFalse("showDebugInfo");
+                lockButtonsOnRandom = mmi.GetTrueFalse("lockButtonsOnRandom");
+                reloadCustomSkinOnInterval = mmi.GetTrueFalse("reloadCustomSkinOnInterval");
+                skinReloadIntervalInFrames = mmi.GetSliderValue("skinReloadIntervalInFrames");
+                assignFirstSkinOnCharacterSelection = mmi.GetTrueFalse("assignFirstSkinOnCharacterSelection");
             }
             #endregion
             #region Set Static Vars
@@ -400,7 +400,7 @@ namespace TextureMod
                     {
                         if (opponentCustomSkinCharacter == packetSkinCharacter || opponentCustomSkinCharacterVariant == packetSkinCharacterVariant)
                         {
-                            opponentCustomTexture = TextureHelper.LoadPNG(Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\opponent.png");
+                            opponentCustomTexture = TextureHelper.LoadPNG(Path.Combine(Path.Combine(TextureMod.resourceFolder, "Images"), "opponent.png"));
                             packetSkinCharacter = Character.NONE;
                             packetSkinCharacterVariant = CharacterVariant.CORPSE;
                             opponentLobbyCharacterModel.PlayCamAnim();

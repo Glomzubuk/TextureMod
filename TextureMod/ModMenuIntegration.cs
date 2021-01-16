@@ -9,36 +9,30 @@ namespace TextureMod
 {
     public class ModMenuIntegration : MonoBehaviour
     {
+        private Config config;
         private ModMenu mm;
         private bool mmAdded = false;
 
-        public Dictionary<string, string> configKeys = new Dictionary<string, string>();
-        public Dictionary<string, string> configBools = new Dictionary<string, string>();
-        public Dictionary<string, string> configInts = new Dictionary<string, string>();
-        public Dictionary<string, string> configSliders = new Dictionary<string, string>();
-        public Dictionary<string, string> configHeaders = new Dictionary<string, string>();
-        public Dictionary<string, string> configGaps = new Dictionary<string, string>();
-        public Dictionary<string, string> configText = new Dictionary<string, string>();
-        public List<string> writeQueue = new List<string>();
+        public List<Entry> writeQueue = new List<Entry>();
 
         private void Start()
         {
             InitConfig();
-            ReadIni();
         }
 
         private void Update()
         {
-            mm = FindObjectOfType<ModMenu>();
-            if (mm != null)
+            if (mmAdded == false)
             {
-                if (mmAdded == false)
+                mm = FindObjectOfType<ModMenu>();
+                if (mm != null)
                 {
                     mm.mods.Add(base.gameObject.name);
                     mmAdded = true;
                 }
             }
         }
+
 
         private void InitConfig()
         {
@@ -111,126 +105,70 @@ namespace TextureMod
             AddToWriteQueue("(text)text8", "If you wish to real time edit your skins, use the F5 button to reload your skin whenever you're in training mode or in the character skin unlock screen");
             AddToWriteQueue("(text)text9", "You can also enable the interval mode and have it automatically reload the current custom skin every so often. Great for dual screen, or windowed mode setups (Does not work in training mode)");
             AddToWriteQueue("(text)text1", "This mod was written by MrGentle");
-            ModMenu.Instance.WriteIni(gameObject.name, writeQueue, configKeys, configBools, configInts, configSliders, configHeaders, configGaps, configText);
-            writeQueue.Clear();
-        }
 
-        public void ReadIni()
-        {
-            string[] lines = File.ReadAllLines(Directory.GetParent(Application.dataPath).FullName + @"\ModSettings\" + gameObject.name + ".ini");
-            configBools.Clear();
-            configKeys.Clear();
-            configInts.Clear();
-            configSliders.Clear();
-            configHeaders.Clear();
-            configGaps.Clear();
-            configText.Clear();
-            foreach (string line in lines)
-            {
-                if (line.StartsWith("(key)"))
-                {
-                    string[] split = line.Split('=');
-                    configKeys.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(bool)"))
-                {
-                    string[] split = line.Split('=');
-                    configBools.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(int)"))
-                {
-                    string[] split = line.Split('=');
-                    configInts.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(slider)"))
-                {
-                    string[] split = line.Split('=');
-                    configSliders.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(header)"))
-                {
-                    string[] split = line.Split('=');
-                    configHeaders.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(gap)"))
-                {
-                    string[] split = line.Split('=');
-                    configGaps.Add(split[0], split[1]);
-                }
-                else if (line.StartsWith("(text)"))
-                {
-                    string[] split = line.Split('=');
-                    configText.Add(split[0], split[1]);
-                }
-            }
+            this.config = ModMenu.Instance.configManager.InitConfig(gameObject.name, writeQueue);
+            writeQueue.Clear();
         }
 
         public void AddToWriteQueue(string key, string value)
         {
-            if (key.StartsWith("(key)"))
+
+            string[] splits = key.Remove(0, 1).Split(')');
+            if (splits[0] == "bool")
             {
-                configKeys.Add(key, value);
-                writeQueue.Add(key);
+                if (value == "true") value = "True";
+                if (value == "false") value = "False";
             }
-            else if (key.StartsWith("(bool)"))
-            {
-                configBools.Add(key, value);
-                writeQueue.Add(key);
-            }
-            else if (key.StartsWith("(int)"))
-            {
-                configInts.Add(key, value);
-                writeQueue.Add(key);
-            }
-            else if (key.StartsWith("(slider)"))
-            {
-                configSliders.Add(key, value);
-                writeQueue.Add(key);
-            }
-            else if (key.StartsWith("(header)"))
-            {
-                configHeaders.Add(key, value);
-                writeQueue.Add(key);
-            }
-            else if (key.StartsWith("(gap)"))
-            {
-                configGaps.Add(key, value);
-                writeQueue.Add(key);
-            }
-            else if (key.StartsWith("(text)"))
-            {
-                configText.Add(key, value);
-                writeQueue.Add(key);
-            }
+            writeQueue.Add(new Entry(splits[1], value, splits[0]));
         }
 
-        public KeyCode GetKeyCode(string keyCode)
+        public void AddEntryToWriteQueue(string key, string value, string type)
         {
-            foreach (KeyCode vKey in System.Enum.GetValues(typeof(KeyCode)))
+            if (type == "bool")
             {
-                if (vKey.ToString() == keyCode)
-                {
-                    return vKey;
-                }
+                if (value == "true") value = "True";
+                if (value == "false") value = "False";
             }
-            return KeyCode.A;
+            writeQueue.Add(new Entry(key, value, type));
+        }
+
+        public KeyCode GetKeyCode(string keyName)
+        {
+            return this.config.GetKeyCode(keyName.Split(')')[1]);
+        }
+        public KeyCode NewGetKeyCode(string keyName)
+        {
+            return this.config.GetKeyCode(keyName);
         }
 
         public bool GetTrueFalse(string boolName)
         {
-            if (boolName == "true") return true;
-            else return false;
+            return this.config.GetBool(boolName.Split(')')[1]);
+        }
+
+        public bool NewGetTrueFalse(string boolName)
+        {
+            return this.config.GetBool(boolName);
         }
 
         public int GetSliderValue(string sliderName)
         {
-            string[] vals = configSliders[sliderName].Split('|');
-            return Convert.ToInt32(vals[0]);
+            return this.config.GetSliderValue(sliderName.Split(')')[1]);
+        }
+
+        public int NewGetSliderValue(string sliderName)
+        {
+            return this.config.GetSliderValue(sliderName);
         }
 
         public int GetInt(string intName)
         {
-            return Convert.ToInt32(configInts[intName]);
+            return this.config.GetInt(intName.Split(')')[1]);
+        }
+
+        public int NewGetInt(string intName)
+        {
+            return this.config.GetInt(intName);
         }
     }
 }

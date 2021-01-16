@@ -9,7 +9,7 @@ namespace TextureMod
 {
     public class TextureLoader : MonoBehaviour
     {
-        private static string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\Characters\";
+        private static string characterImagesFolder = Path.Combine(TextureMod.resourceFolder, "Characters");
         public List<string> chars = new List<string>();
         public Dictionary<Character, Dictionary<string, Texture2D>> characterTextures = new Dictionary<Character, Dictionary<string, Texture2D>>();
 
@@ -27,7 +27,7 @@ namespace TextureMod
             Resources.UnloadUnusedAssets();
             characterTextures.Clear();
 
-            foreach (string path in Directory.GetDirectories(resourceFolder.Replace("/", @"\")))
+            foreach (string path in Directory.GetDirectories(characterImagesFolder))
             {
                 chars.Add(path);
             }
