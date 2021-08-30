@@ -67,6 +67,7 @@ namespace TextureMod
 
             ConfigFile config = TextureMod.Instance.Config;
 
+            config.Bind("EffectChanger", "parry_header", "Parry Settings:", "modmenu_header");
             enableCustomParry = config.Bind("EffectChanger", "enableCustomParryAndClash", false);
 
             parryFirstColorR = config.Bind("EffectChanger", "parryFirstColorR", 0,
@@ -78,6 +79,8 @@ namespace TextureMod
             parryFirstColorB = config.Bind("EffectChanger", "parryFirstColorR", 0,
                 new ConfigDescription("Parry's first color blue amount", new AcceptableValueRange<int>(0, 255))
             );
+            config.Bind("EffectChanger", "parry_gap1", "20", "modmenu_gap");
+
             parrySecondColorR = config.Bind("EffectChanger", "parrySecondColorR", 0,
                 new ConfigDescription("Parry's second color red amount", new AcceptableValueRange<int>(0, 255))
             );
@@ -87,6 +90,8 @@ namespace TextureMod
             parrySecondColorB = config.Bind("EffectChanger", "parrySecondColorB", 0,
                 new ConfigDescription("Parry's second color blue amount", new AcceptableValueRange<int>(0, 255))
             );
+            config.Bind("EffectChanger", "parry_gap2", "20", "modmenu_gap");
+
             parryThirdColorR = config.Bind("EffectChanger", "parryThirdColorR", 0,
                 new ConfigDescription("Parry's third color red amount", new AcceptableValueRange<int>(0, 255))
             );
@@ -96,6 +101,7 @@ namespace TextureMod
             parryThirdColorB = config.Bind("EffectChanger", "parryThirdColorB", 0,
                 new ConfigDescription("Parry's third color blue amount", new AcceptableValueRange<int>(0, 255))
             );
+            config.Bind("EffectChanger", "parry_gap3", "20", "modmenu_gap");
         }
 
         private void Update()

@@ -131,19 +131,27 @@ namespace TextureMod
 
             ConfigFile config = TextureMod.Instance.Config;
 
+            config.Bind("TextureChanger", "lobby_settings_header", "Lobby Settings:", "modmenu_header");
             holdKey1 = config.Bind<KeyCode>("TextureChanger", "holdKey1", KeyCode.LeftShift);
             nextSkin = config.Bind<KeyCode>("TextureChanger", "nextSkin", KeyCode.Mouse0);
             previousSkin = config.Bind<KeyCode>("TextureChanger", "previousSkin", KeyCode.Mouse1);
             cancelKey = config.Bind<KeyCode>("TextureChanger", "cancelKey", KeyCode.A);
-            reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
-            reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
             useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
             neverApplyOpponentsSkin = config.Bind<bool>("TextureChanger", "neverApplyOpponentsSkin", false);
-            showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
             lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
+            assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
+            config.Bind("TextureChanger", "gap1", "20", "modmenu_gap");
+
+            config.Bind("TextureChanger", "rt_skin_edit_header", "Real-time Skin editing:", "modmenu_header");
+            reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
+            reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
             reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", true);
             skinReloadIntervalInFrames = config.Bind<int>("TextureChanger", "skinReloadIntervalInFrames", 60);
-            assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
+            config.Bind("TextureChanger", "gap2", "20", "modmenu_gap");
+
+            config.Bind("TextureChanger", "general_header", "General:", "modmenu_header");
+            showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
+            config.Bind("TextureChanger", "gap3", "20", "modmenu_gap");
         }
 
         private void OnGUI()
