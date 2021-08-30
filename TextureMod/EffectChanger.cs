@@ -1,15 +1,16 @@
-﻿using GameplayEntities;
+﻿using System.IO;
 using System.Linq;
 using UnityEngine;
+using GameplayEntities;
+using BepInEx;
+using BepInEx.Configuration;
 
 
 namespace TextureMod
 {
     public class EffectChanger : MonoBehaviour
     {
-        public static string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\Effects\";
-
-        ModMenuIntegration MMI;
+        public static string effectsFolder = Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
 
         #region Parry and clash effects
         Texture2D parryActiveBG;
@@ -27,66 +28,84 @@ namespace TextureMod
         Texture2D clashBG;
         Texture2D clashFG;
 
-        byte parryFirstColorR = 0;
-        byte parryFirstColorG = 0;
-        byte parryFirstColorB = 0;
+        ConfigEntry<int> parryFirstColorR;
+        ConfigEntry<int> parryFirstColorG;
+        ConfigEntry<int> parryFirstColorB;
 
-        byte parrySecondColorR = 0;
-        byte parrySecondColorG = 0;
-        byte parrySecondColorB = 0;
+        ConfigEntry<int> parrySecondColorR;
+        ConfigEntry<int> parrySecondColorG;
+        ConfigEntry<int> parrySecondColorB;
 
-        byte parryThirdColorR = 0;
-        byte parryThirdColorG = 0;
-        byte parryThirdColorB = 0;
+        ConfigEntry<int> parryThirdColorR;
+        ConfigEntry<int> parryThirdColorG;
+        ConfigEntry<int> parryThirdColorB;
 
-        bool enableCustomParry;
+        ConfigEntry<bool> enableCustomParry;
         #endregion
 
 
 
         private void Start()
         {
-            parryActiveBG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryActiveBG.png");
-            parryActiveMG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryActiveMG.png");
-            parryActiveFG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryActiveFG.png");
+            string parryFolder = Path.Combine(effectsFolder, "parry");
+            parryActiveBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveBG.png"));
+            parryActiveMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveMG.png"));
+            parryActiveFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveFG.png"));
 
-            parryEndBG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryEndBG.png");
-            parryEndMG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryEndMG.png");
-            parryEndFG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parryEndFG.png");
+            parryEndBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndBG.png"));
+            parryEndMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndMG.png"));
+            parryEndFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndFG.png"));
 
-            parrySuccessBG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parrySuccessBG.png");
-            parrySuccessMG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parrySuccessMG.png");
-            parrySuccessFG = TextureHelper.LoadPNG(resourceFolder + @"parry\" + "parrySuccessFG.png");
+            parrySuccessBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessBG.png"));
+            parrySuccessMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessMG.png"));
+            parrySuccessFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessFG.png"));
 
-            clashBG = TextureHelper.LoadPNG(resourceFolder + @"Clash\" + "clashEffectBG.png");
-            clashFG = TextureHelper.LoadPNG(resourceFolder + @"Clash\" + "clashEffectFG.png");
-        }
+            string clashFolder = Path.Combine(effectsFolder, "Clash");
+            clashBG = TextureHelper.LoadPNG(Path.Combine(clashFolder, "clashEffectBG.png"));
+            clashFG = TextureHelper.LoadPNG(Path.Combine(clashFolder, "clashEffectFG.png"));
 
-        private void FixedUpdate()
-        {
-            if (MMI == null) MMI = TextureMod.Instance.MMI;
-            if (TextureMod.Instance.tc.InMenu())
-            {
-                enableCustomParry = MMI.GetTrueFalse(MMI.configBools["(bool)enableCustomParryAndClash"]);
 
-                parryFirstColorR = (byte)MMI.GetSliderValue("(slider)parryFirstColorR");
-                parryFirstColorG = (byte)MMI.GetSliderValue("(slider)parryFirstColorG");
-                parryFirstColorB = (byte)MMI.GetSliderValue("(slider)parryFirstColorB");
+            ConfigFile config = TextureMod.Instance.Config;
 
-                parrySecondColorR = (byte)MMI.GetSliderValue("(slider)parrySecondColorR");
-                parrySecondColorG = (byte)MMI.GetSliderValue("(slider)parrySecondColorG");
-                parrySecondColorB = (byte)MMI.GetSliderValue("(slider)parrySecondColorB");
+            enableCustomParry = config.Bind("EffectChanger", "enableCustomParryAndClash", false);
 
-                parryThirdColorR = (byte)MMI.GetSliderValue("(slider)parryThirdColorR");
-                parryThirdColorG = (byte)MMI.GetSliderValue("(slider)parryThirdColorG");
-                parryThirdColorB = (byte)MMI.GetSliderValue("(slider)parryThirdColorB");
-            }
+            parryFirstColorR = config.Bind("EffectChanger", "parryFirstColorR", 0,
+                new ConfigDescription("Parry's first color red amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parryFirstColorG = config.Bind("EffectChanger", "parryFirstColorG", 0,
+                new ConfigDescription("Parry's first color green amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parryFirstColorB = config.Bind("EffectChanger", "parryFirstColorR", 0,
+                new ConfigDescription("Parry's first color blue amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parrySecondColorR = config.Bind("EffectChanger", "parrySecondColorR", 0,
+                new ConfigDescription("Parry's second color red amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parrySecondColorG = config.Bind("EffectChanger", "parrySecondColorG", 0,
+                new ConfigDescription("Parry's second color green amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parrySecondColorB = config.Bind("EffectChanger", "parrySecondColorB", 0,
+                new ConfigDescription("Parry's second color blue amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parryThirdColorR = config.Bind("EffectChanger", "parryThirdColorR", 0,
+                new ConfigDescription("Parry's third color red amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parryThirdColorG = config.Bind("EffectChanger", "parryThirdColorG", 0,
+                new ConfigDescription("Parry's third color green amount", new AcceptableValueRange<int>(0, 255))
+            );
+            parryThirdColorB = config.Bind("EffectChanger", "parryThirdColorB", 0,
+                new ConfigDescription("Parry's third color blue amount", new AcceptableValueRange<int>(0, 255))
+            );
         }
 
         private void Update()
         {
-            if (enableCustomParry == true)
+            if (enableCustomParry.Value == true)
             {
+                Color32 parryFirstColor = new Color32((byte)parryFirstColorR.Value, (byte)parryFirstColorG.Value, (byte)parryFirstColorB.Value, 255);
+                Color32 parrySecondColor = new Color32((byte)parrySecondColorR.Value, (byte)parrySecondColorG.Value, (byte)parrySecondColorB.Value, 255);
+                Color32 parryThirdColor = new Color32((byte)parryThirdColorR.Value, (byte)parryThirdColorG.Value, (byte)parryThirdColorB.Value, 255);
+
                 MeshRenderer[] mrs = FindObjectsOfType<MeshRenderer>();
                 foreach (MeshRenderer mr in mrs)
                 {
@@ -100,9 +119,9 @@ namespace TextureMod
                         m3.mainTexture = parryActiveFG;
                         Material[] mArray = new Material[] { m1, m2, m3 };
                         mr.materials = mArray;
-                        mr.materials[0].color = new Color32(parryFirstColorR, parryFirstColorG, parryFirstColorB, 255);
-                        mr.materials[1].color = new Color32(parrySecondColorR, parrySecondColorG, parrySecondColorB, 255);
-                        mr.materials[2].color = new Color32(parryThirdColorR, parryThirdColorG, parryThirdColorB, 255);
+                        mr.materials[0].color = parryFirstColor;
+                        mr.materials[1].color = parrySecondColor;
+                        mr.materials[2].color = parryThirdColor;
                     }
                 }
 
@@ -121,9 +140,9 @@ namespace TextureMod
                             m3.mainTexture = parryEndFG;
                             Material[] mArray = new Material[] { m1, m2, m3 };
                             mr.materials = mArray;
-                            mr.materials[0].color = new Color32(parryFirstColorR, parryFirstColorG, parryFirstColorB, 255);
-                            mr.materials[1].color = new Color32(parrySecondColorR, parrySecondColorG, parrySecondColorB, 255);
-                            mr.materials[2].color = new Color32(parryThirdColorR, parryThirdColorG, parryThirdColorB, 255);
+                            mr.materials[0].color = parryFirstColor;
+                            mr.materials[1].color = parrySecondColor;
+                            mr.materials[2].color = parryThirdColor;
                         }
                     }
 
@@ -141,9 +160,9 @@ namespace TextureMod
                         m3.mainTexture = parrySuccessFG;
                         Material[] mArray = new Material[] { m1, m2, m3 };
                         mr.materials = mArray;
-                        mr.materials[0].color = new Color32(parryFirstColorR, parryFirstColorG, parryFirstColorB, 255);
-                        mr.materials[1].color = new Color32(parrySecondColorR, parrySecondColorG, parrySecondColorB, 255);
-                        mr.materials[2].color = new Color32(parryThirdColorR, parryThirdColorG, parryThirdColorB, 255);
+                        mr.materials[0].color = parryFirstColor;
+                        mr.materials[1].color = parrySecondColor;
+                        mr.materials[2].color = parryThirdColor;
                     }
 
                     if (ve.name == "clashEffect")
@@ -156,8 +175,8 @@ namespace TextureMod
                         m2.mainTexture = clashFG;
                         Material[] mArray = new Material[] { m1, m2 };
                         mr.materials = mArray;
-                        mr.materials[0].color = new Color32(parryFirstColorR, parryFirstColorG, parryFirstColorB, 255);
-                        mr.materials[1].color = new Color32(parryThirdColorR, parryThirdColorG, parryThirdColorB, 255);
+                        mr.materials[0].color = parryFirstColor;
+                        mr.materials[1].color = parryThirdColor;
                     }
                 }
             }

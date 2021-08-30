@@ -11,7 +11,7 @@ namespace TextureMod
 {
     public class TextureLoader : MonoBehaviour
     {
-        private readonly string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\Characters\";
+        private static readonly string charactersFolder = BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters");
         public List<string> chars;
         //public Dictionary<Character, Dictionary<string, Texture2D>> characterTextures = new Dictionary<Character, Dictionary<string, Texture2D>>();
         public Dictionary<Character, List<CustomSkin>> newCharacterTextures = new Dictionary<Character, List<CustomSkin>>();
@@ -27,7 +27,7 @@ namespace TextureMod
 
         private List<string> GetCharacterFolders()
         {
-            return new List<string>(Directory.GetDirectories(resourceFolder.Replace("/", @"\")));
+            return new List<string>(Directory.GetDirectories(charactersFolder));
         }
 
         public void ReloadChacterSpecificSkins(Character character)

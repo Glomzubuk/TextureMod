@@ -1,35 +1,38 @@
-﻿using LLHandlers;
-using LLModMenu;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using LLHandlers;
 using LLScreen;
 using Multiplayer;
 using Steamworks;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
+using BepInEx;
+using LLBML;
+
 
 namespace TextureMod
 {
-    public class TextureMod : MonoBehaviour
+    [BepInPlugin(PluginInfos.PLUGIN_ID, PluginInfos.PLUGIN_NAME, PluginInfos.PLUGIN_VERSION)]
+    [BepInProcess("LLBlaze.exe")]
+    public class TextureMod : BaseUnityPlugin
     {
-        public static TextureMod Instance { get; private set; }
-        public static void Initialize()
-        {
-            GameObject gameObject = new GameObject("TextureMod", typeof(TextureMod));
-            Instance = gameObject.GetComponent<TextureMod>();
-            DontDestroyOnLoad(gameObject);
-        }
-
-        private const string modVersion = "1.4.9";
+        #region legacystrings
+        private const string modVersion = PluginInfos.PLUGIN_VERSION;
         private const string repositoryOwner = "Daioutzu";
         private const string repositoryName = "LLBMM-TextureMod";
+        #endregion
 
         public string debug = "";
 
+        #region instances
+        public static TextureMod Instance { get; private set; }
         public TextureChanger tc = null;
-        public ModMenuIntegration MMI = null;
         public TextureLoader tl = null;
         public ExchangeClient ec = null;
         public ModDebugging md = null;
+        #endregion
+
+        public static string ResourceFolder { get { return BepInEx.Utility.CombinePaths(Paths.ManagedPath, "TextureModResources"); } }
+
         public string retSkin = "";
         public EffectChanger effectChanger = null;
         public ShowcaseStudio showcaseStudio = null;
@@ -38,17 +41,33 @@ namespace TextureMod
         public static bool hasDLC = false;
         public static string loadingText = $"TextureMod is loading External Textures...";
 
+        public void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
             UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
             CheckIfPLayerHasDLC();
             if (ownedDLCs.Count > 0) hasDLC = true;
+
+
+            Logger.LogInfo("Searching ModMenuEx");
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("org.bepinex.plugins.llb.modmenuex"))
+            {
+                Logger.LogInfo("Registering to ModMenuEx");
+                ModMenuEx.ModMenuEx.RegisterMod(this.Info);
+            }
         }
 
         private void Update()
         {
-            if (MMI == null) { MMI = gameObject.AddComponent<ModMenuIntegration>(); }
-            if (tl == null) { tl = gameObject.AddComponent<TextureLoader>(); }
+            if (tl == null) { 
+                tl = gameObject.AddComponent<TextureLoader>(); 
+            } else if(tl.loadingExternalFiles == false) {
+                LoadingScreen.SetLoading(this.Info, false);
+            }
             if (tc == null) { tc = gameObject.AddComponent<TextureChanger>(); }
             if (ec == null) { ec = gameObject.AddComponent<ExchangeClient>(); }
             if (md == null) { md = gameObject.AddComponent<ModDebugging>(); }
@@ -58,6 +77,7 @@ namespace TextureMod
 
         private void OnGUI()
         {
+            /*
             var OriginalColor = GUI.contentColor;
             var OriginalLabelFontSize = GUI.skin.label.fontSize;
             var OriginalLabelAlignment = GUI.skin.label.alignment;
@@ -76,7 +96,7 @@ namespace TextureMod
             GUI.contentColor = OriginalColor;
             GUI.skin.label.fontSize = OriginalLabelFontSize;
             GUI.skin.label.alignment = OriginalLabelAlignment;
-
+            */
             GUI.Label(new Rect(5f, 5f, 1920f, 25f), debug);
         }
 

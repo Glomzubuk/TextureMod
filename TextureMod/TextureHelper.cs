@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using UnityEngine;
 
 namespace TextureMod
@@ -10,7 +9,7 @@ namespace TextureMod
     {
         public static Texture2D LoadPNG(string _path, string _fileName = "") //Loads a png from a file and returns it (Loads the asset into memory, do only load it once)
         {
-            var fullPath = _path + _fileName;
+            string fullPath = Path.Combine(_path, _fileName);
             if (!File.Exists(fullPath))
             {
                 Debug.Log("Could not find " + fullPath);

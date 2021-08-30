@@ -1,23 +1,29 @@
-﻿using GameplayEntities;
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using GameplayEntities;
 using LLGUI;
 using LLHandlers;
 using LLScreen;
 using Multiplayer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+using BepInEx;
+using BepInEx.Configuration;
+using HarmonyLib;
+using LLBML;
 
 namespace TextureMod
 {
     public class TextureChanger : MonoBehaviour
     {
         #region General Fields
-        public static string resourceFolder = Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\";
-        private JOFJHDJHJGI gameState => DNPFJHMAIBP.HHMOGKIMBNM();
-        private GameMode currentGameMode => JOMBNFKIHIC.GIGAKBJGFDI.PNJOKAICMNN;
-        private bool IsOnline => JOMBNFKIHIC.GDNFJCCCKDM;
+        public static string imageFolder = Path.Combine(TextureMod.ResourceFolder, "Images");
+
+        private JOFJHDJHJGI gameState => StateApi.CurrentGameState;
+        private GameMode currentGameMode => StateApi.CurrentGameMode;
+        private bool IsOnline => NetworkApi.IsOnline;
+
         public static bool InMatch => World.instance != null && (DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.CDOFDJMLGLO || DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.LGILIJKMKOD) && !LLScreen.UIScreen.loadingScreenActive;
         public string[] debug = new string[20];
         public bool doSkinPost = false;
@@ -43,19 +49,19 @@ namespace TextureMod
 
         #endregion
         #region Config Fields
-        private KeyCode holdKey1 = KeyCode.LeftShift;
-        private KeyCode nextSkin = KeyCode.Mouse0;
-        private KeyCode previousSkin = KeyCode.Mouse1;
-        private KeyCode cancelKey = KeyCode.A;
-        public KeyCode reloadCustomSkin = KeyCode.F5;
-        public KeyCode reloadEntireSkinLibrary = KeyCode.F9;
-        private bool useOnlySetKey = false;
-        private bool neverApplyOpponentsSkin = false;
-        public bool showDebugInfo = false;
-        private bool lockButtonsOnRandom = false;
-        public bool reloadCustomSkinOnInterval = true;
-        public int skinReloadIntervalInFrames = 60;
-        public bool assignFirstSkinOnCharacterSelection = false;
+        private ConfigEntry<KeyCode> holdKey1;
+        private ConfigEntry<KeyCode> nextSkin;
+        private ConfigEntry<KeyCode> previousSkin;
+        private ConfigEntry<KeyCode> cancelKey;
+        public ConfigEntry<KeyCode> reloadCustomSkin;
+        public ConfigEntry<KeyCode> reloadEntireSkinLibrary;
+        private ConfigEntry<bool> useOnlySetKey;
+        private ConfigEntry<bool> neverApplyOpponentsSkin;
+        public ConfigEntry<bool> showDebugInfo;
+        private ConfigEntry<bool> lockButtonsOnRandom;
+        public ConfigEntry<bool> reloadCustomSkinOnInterval;
+        public ConfigEntry<int> skinReloadIntervalInFrames;
+        public ConfigEntry<bool> assignFirstSkinOnCharacterSelection;
         #endregion
         #region LocalPlayer Fields
         public ALDOKEMAOMB localLobbyPlayer => ALDOKEMAOMB.BJDPHEHJJJK(P2P.localPeer?.playerNr ?? 0);
@@ -108,17 +114,36 @@ namespace TextureMod
 
         private void Start()
         {
-            candySplashWhite = TextureHelper.LoadPNG(resourceFolder + @"Effects\candySplashWhite.png");
+            string effectsFolder = Path.Combine(imageFolder, "Effects");
 
-            gridStartBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridStartBG.png");
-            gridStartFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridStartFG.png");
-            gridTrail = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridTrail.png");
-            gridArrive = TextureHelper.LoadPNG(resourceFolder + @"Effects\GridSpecial\gridArrive.png");
+            candySplashWhite = TextureHelper.LoadPNG(Path.Combine(effectsFolder, "candySplashWhite.png"));
 
-            bubbleBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubbleBG.png");
-            bubbleFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubbleFG.png");
-            bubblePopBG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubblePopBG.png");
-            bubblePopFG = TextureHelper.LoadPNG(resourceFolder + @"Effects\JetSpecial\bubblePopFG.png");
+            gridStartBG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "GridSpecial", "gridStartBG.png"));
+            gridStartFG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "GridSpecial", "gridStartFG.png"));
+            gridTrail = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "GridSpecial", "gridTrail.png"));
+            gridArrive = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "GridSpecial", "gridArrive.png"));
+
+            bubbleBG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "JetSpecial", "bubbleBG.png"));
+            bubbleFG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "JetSpecial", "bubbleFG.png"));
+            bubblePopBG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "JetSpecial", "bubblePopBG.png"));
+            bubblePopFG = TextureHelper.LoadPNG(Utility.CombinePaths(effectsFolder, "JetSpecial", "bubblePopFG.png"));
+
+
+            ConfigFile config = TextureMod.Instance.Config;
+
+            holdKey1 = config.Bind<KeyCode>("TextureChanger", "holdKey1", KeyCode.LeftShift);
+            nextSkin = config.Bind<KeyCode>("TextureChanger", "nextSkin", KeyCode.Mouse0);
+            previousSkin = config.Bind<KeyCode>("TextureChanger", "previousSkin", KeyCode.Mouse1);
+            cancelKey = config.Bind<KeyCode>("TextureChanger", "cancelKey", KeyCode.A);
+            reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
+            reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
+            useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
+            neverApplyOpponentsSkin = config.Bind<bool>("TextureChanger", "neverApplyOpponentsSkin", false);
+            showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
+            lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
+            reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", true);
+            skinReloadIntervalInFrames = config.Bind<int>("TextureChanger", "skinReloadIntervalInFrames", 60);
+            assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
         }
 
         private void OnGUI()
@@ -133,9 +158,12 @@ namespace TextureMod
                 else content = new GUIContent(labelTxt + " (Refresh " + "[" + reloadCustomSkinTimer + "]" + ")");
                 GUI.skin.box.alignment = TextAnchor.MiddleCenter;
                 GUI.skin.box.fontSize = 22;
+
+                ScreenBase screenOne = ScreenApi.CurrentScreens[1];
+
                 if (InLobby(GameType.Any))
                 {
-                    if (UIScreen.currentScreens[1] == null)
+                    if (screenOne == null)
                     {
                         switch (currentGameMode)
                         {
@@ -156,9 +184,9 @@ namespace TextureMod
                     }
                 }
 
-                if (UIScreen.currentScreens[1] != null)
+                if (screenOne != null)
                 {
-                    if (UIScreen.currentScreens[1].screenType == ScreenType.UNLOCKS_SKINS)
+                    if (screenOne.screenType == ScreenType.UNLOCKS_SKINS)
                     {
                         if (TextureMod.Instance.showcaseStudio.showUI == false)
                         {
@@ -178,7 +206,7 @@ namespace TextureMod
 
         private void FixedUpdate()
         {
-            if (!neverApplyOpponentsSkin)
+            if (!neverApplyOpponentsSkin.Value)
             {
                 if (doSkinPost) { postTimer++; }
                 if (localLobbyPlayer != null && localCustomSkin != null)
@@ -227,12 +255,12 @@ namespace TextureMod
 
         bool OnSkinChangeButtonDown()
         {
-            if (Input.GetKeyDown(nextSkin) || Controller.all.GetButtonDown(InputAction.EXPRESS_RIGHT))
+            if (Input.GetKeyDown(nextSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_RIGHT))
             {
                 localSkinIndex++;
                 return true;
             }
-            else if (Input.GetKeyDown(previousSkin) || Controller.all.GetButtonDown(InputAction.EXPRESS_LEFT))
+            else if (Input.GetKeyDown(previousSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_LEFT))
             {
                 localSkinIndex--;
                 return true;
@@ -241,31 +269,10 @@ namespace TextureMod
         }
 
 
-        void ModMenuInit()
-        {
-            if (TextureMod.Instance.MMI != null)
-            {
-                var mmi = TextureMod.Instance.MMI;
-                holdKey1 = mmi.GetKeyCode(mmi.configKeys["(key)enableSkinChanger"]);
-                nextSkin = mmi.GetKeyCode(mmi.configKeys["(key)nextSkin"]);
-                previousSkin = mmi.GetKeyCode(mmi.configKeys["(key)previousSkin"]);
-                cancelKey = mmi.GetKeyCode(mmi.configKeys["(key)cancelOpponentCustomSkin"]);
-                reloadCustomSkin = mmi.GetKeyCode(mmi.configKeys["(key)reloadCustomSkin"]);
-                reloadEntireSkinLibrary = mmi.GetKeyCode(mmi.configKeys["(key)reloadEntireSkinLibrary"]);
-                useOnlySetKey = mmi.GetTrueFalse(mmi.configBools["(bool)noHoldMode"]);
-                neverApplyOpponentsSkin = mmi.GetTrueFalse(mmi.configBools["(bool)neverApplyOpponentsSkin"]);
-                showDebugInfo = mmi.GetTrueFalse(mmi.configBools["(bool)showDebugInfo"]);
-                lockButtonsOnRandom = mmi.GetTrueFalse(mmi.configBools["(bool)lockButtonsOnRandom"]);
-                reloadCustomSkinOnInterval = mmi.GetTrueFalse(mmi.configBools["(bool)reloadCustomSkinOnInterval"]);
-                skinReloadIntervalInFrames = mmi.GetSliderValue("(slider)skinReloadIntervalInFrames");
-                assignFirstSkinOnCharacterSelection = mmi.GetTrueFalse(mmi.configBools["(bool)assignFirstSkinOnCharacterSelection"]);
-            }
-        }
-
         void DebugOptions()
         {
             #region Set Debug Vars
-            if (showDebugInfo)
+            if (showDebugInfo.Value)
             {
                 ModDebugging md = TextureMod.Instance.md;
                 try { md.AddToWindow("General", "Gamestate", gameState.ToString()); } catch { }
@@ -274,9 +281,9 @@ namespace TextureMod
                 try { md.AddToWindow("General", "In Lobby", InLobby(GameType.Any).ToString()); } catch { }
                 try { md.AddToWindow("General", "In Game", InGame(GameType.Any).ToString()); } catch { }
                 try { md.AddToWindow("General", "In Post Game", InPostGame().ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[0]", UIScreen.currentScreens[0]?.screenType.ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[1]", UIScreen.currentScreens[1]?.screenType.ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[2]", UIScreen.currentScreens[2]?.screenType.ToString()); } catch { }
+                try { md.AddToWindow("General", "CurrentScreen[0]", ScreenApi.CurrentScreens[0]?.screenType.ToString()); } catch { }
+                try { md.AddToWindow("General", "CurrentScreen[1]", ScreenApi.CurrentScreens[1]?.screenType.ToString()); } catch { }
+                try { md.AddToWindow("General", "CurrentScreen[2]", ScreenApi.CurrentScreens[2]?.screenType.ToString()); } catch { }
 
                 try { md.AddToWindow("Skin Exchange", "Do Skin Post", doSkinPost.ToString()); } catch { }
                 try { md.AddToWindow("Skin Exchange", "Post Timer", postTimer.ToString()); } catch { }
@@ -390,7 +397,10 @@ namespace TextureMod
         {
             if (opponentPlayer != null && opponentLobbyCharacterModel != null)
             {
-                if ((opponentLobbyCharacterModel.character != opponentCustomSkinCharacter || opponentLobbyCharacterModel.characterVariant != opponentCustomSkinCharacterVariant) && (opponentPlayer.DOFCCEDJODB != Character.NONE || opponentPlayer.AIINAIDBHJI != CharacterVariant.CORPSE))
+                Traverse tv_opponentLobbyCharacterModel = Traverse.Create(opponentLobbyCharacterModel);
+                Character opponentModelCharacter = tv_opponentLobbyCharacterModel.Field<Character>("character").Value;
+                CharacterVariant opponentModelCharacterVariant = tv_opponentLobbyCharacterModel.Field<CharacterVariant>("characterVariant").Value;
+                if ((opponentModelCharacter != opponentCustomSkinCharacter || opponentModelCharacterVariant != opponentCustomSkinCharacterVariant) && (opponentPlayer.DOFCCEDJODB != Character.NONE || opponentPlayer.AIINAIDBHJI != CharacterVariant.CORPSE))
                 {
                     if (packetSkinCharacter != Character.NONE && opponentPlayer.DOFCCEDJODB != (Character)32 && packetSkinCharacterVariant != CharacterVariant.CORPSE)
                     {
@@ -419,7 +429,7 @@ namespace TextureMod
                     {
                         if (opponentCustomSkinCharacter == packetSkinCharacter || opponentCustomSkinCharacterVariant == packetSkinCharacterVariant)
                         {
-                            opponentCustomTexture = TextureHelper.LoadPNG(Application.dataPath.Replace("/", @"\") + @"\Managed\TextureModResources\Images\opponent.png");
+                            opponentCustomTexture = TextureHelper.LoadPNG(Path.Combine(imageFolder, "opponent.png"));
                             packetSkinCharacter = Character.NONE;
                             packetSkinCharacterVariant = CharacterVariant.CORPSE;
                             opponentLobbyCharacterModel.PlayCamAnim();
@@ -448,7 +458,6 @@ namespace TextureMod
                 InitOpponentPlayer();
             } 
 #endif
-            ModMenuInit();
 
             DebugOptions();
 
@@ -469,7 +478,7 @@ namespace TextureMod
 
         void LateUpdate()
         {
-            if (Input.GetKeyDown(reloadEntireSkinLibrary))
+            if (Input.GetKeyDown(reloadEntireSkinLibrary.Value))
             {
                 TextureMod.Instance.tl.LoadLibrary(); //Reloads the entire texture folder
             }
@@ -477,9 +486,10 @@ namespace TextureMod
 
         void DisableCharacterButtons()
         {
-            if (randomizedChar && UIScreen.currentScreens[1] != null) // If you have randomized your character, activate buttons again
+            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
+            if (randomizedChar && screenOne != null) // If you have randomized your character, activate buttons again
             {
-                if (UIScreen.currentScreens[1].screenType == ScreenType.PLAYERS_STAGE || UIScreen.currentScreens[1].screenType == ScreenType.PLAYERS_STAGE_RANKED)
+                if (screenOne.screenType == ScreenType.PLAYERS_STAGE || screenOne.screenType == ScreenType.PLAYERS_STAGE_RANKED)
                 {
                     LLButton[] buttons = FindObjectsOfType<LLButton>();
                     foreach (LLButton b in buttons) b.SetActive(true);
@@ -583,7 +593,7 @@ namespace TextureMod
                         {
                             if (localCustomSkin != null)
                             {
-                                if (Input.GetKeyDown(reloadCustomSkin))
+                                if (Input.GetKeyDown(reloadCustomSkin.Value))
                                 {
                                     try { localCustomSkin.ReloadSkin(); }
                                     catch { AudioHandler.PlaySfx(Sfx.MENU_BACK); }
@@ -600,7 +610,7 @@ namespace TextureMod
                     case GameMode.COMPETITIVE:
                         #region In ranked and online lobby
 
-                        if (Input.GetKeyDown(cancelKey))
+                        if (Input.GetKeyDown(cancelKey.Value))
                         {
                             cancelOpponentSkin = !cancelOpponentSkin;
                             if (opponentLobbyCharacterModel != null)
@@ -749,7 +759,7 @@ namespace TextureMod
                     if (localPlayerChar != localLobbyPlayer.DOFCCEDJODB || localPlayerCharVar != localLobbyPlayer.AIINAIDBHJI)
                     {
                         localCustomSkin = null;
-                        if (assignFirstSkinOnCharacterSelection && localPlayerChar != localLobbyPlayer.DOFCCEDJODB && localLobbyPlayer.DOFCCEDJODB != Character.RANDOM)
+                        if (assignFirstSkinOnCharacterSelection.Value && localPlayerChar != localLobbyPlayer.DOFCCEDJODB && localLobbyPlayer.DOFCCEDJODB != Character.RANDOM)
                         {
                             localSkinIndex = 0;
                             changeSkin = true;
@@ -765,9 +775,9 @@ namespace TextureMod
                     LLButton[] buttons = FindObjectsOfType<LLButton>();
                     HDLIJDBFGKN gameStatesOnlineLobby = FindObjectOfType<HDLIJDBFGKN>();
 
-                    if (useOnlySetKey == false)
+                    if (useOnlySetKey.Value == false)
                     {
-                        if (Input.GetKey(holdKey1) && buttons.Length > 0)
+                        if (Input.GetKey(holdKey1.Value) && buttons.Length > 0)
                         {
                             if (OnSkinChangeButtonDown())
                             {
@@ -779,7 +789,7 @@ namespace TextureMod
                                 b.SetActive(false); //Deactivate buttons
                             }
                         }
-                        else if (Input.GetKeyUp(holdKey1) && buttons.Length > 0)
+                        else if (Input.GetKeyUp(holdKey1.Value) && buttons.Length > 0)
                         {
                             foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
                         }
@@ -799,10 +809,17 @@ namespace TextureMod
 
                         if (InLobby(GameType.Online))
                         {
+                            AccessTools.Method(typeof(HDLIJDBFGKN), "JPNNBHNHHJC").Invoke(gameStatesOnlineLobby, null); // AutoReadyReset
+                            AccessTools.Method(typeof(HDLIJDBFGKN), "EMFKKOJEIPN").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer.CJFLMDNNMIE, false }); // SetReady
+
+                            AccessTools.Method(typeof(HDLIJDBFGKN), "BFIGLDLHKPO").Invoke(gameStatesOnlineLobby, null); // UpdateReadyButton
+                            AccessTools.Method(typeof(HDLIJDBFGKN), "OFGNNIBJOLH").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer }); // SendPlayerState
+                            /*
                             gameStatesOnlineLobby.JPNNBHNHHJC(); // gameStatesOnlineLobby.AutoReadyReset
-                            gameStatesOnlineLobby.EMFKKOJEIPN(localLobbyPlayer.CJFLMDNNMIE, false); //Set Ready
+                            gameStatesOnlineLobby.EMFKKOJEIPN(localLobbyPlayer.CJFLMDNNMIE, false); // SetReady
                             gameStatesOnlineLobby.BFIGLDLHKPO(); // gameStatesOnlineLobby.UpdateReadyButton
                             gameStatesOnlineLobby.OFGNNIBJOLH(localLobbyPlayer); // gameStatesOnlineLobby.SendPlayerState
+                            */
                         }
 
                         bool isRandom = false;
@@ -823,10 +840,14 @@ namespace TextureMod
 
                             if (InLobby(GameType.Online))
                             {
+                                AccessTools.Method(typeof(HDLIJDBFGKN), "EMFKKOJEIPN").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer.CJFLMDNNMIE, true }); // SetReady
+                                AccessTools.Method(typeof(HDLIJDBFGKN), "OFGNNIBJOLH").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer }); // SendPlayerState
+                                /*
                                 gameStatesOnlineLobby.EMFKKOJEIPN(localLobbyPlayer.CJFLMDNNMIE, true); // SetReady
                                 gameStatesOnlineLobby.OFGNNIBJOLH(localLobbyPlayer); //Send player state (Signalizes that we have changes characters and that we are ready)
+                                */
 
-                                if (lockButtonsOnRandom)
+                                if (lockButtonsOnRandom.Value)
                                 {
                                     foreach (LLButton b in buttons) b.SetActive(false);
                                     randomizedChar = true;
@@ -856,10 +877,11 @@ namespace TextureMod
 
         void UpdateCustomSkinsInMenu()
         {
+            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
             if (InMenu())
             {
                 sendCancelRequestToServer = true;
-                if (UIScreen.currentScreens[1]?.screenType != ScreenType.UNLOCKS_SKINS)
+                if (screenOne?.screenType != ScreenType.UNLOCKS_SKINS)
                 {
                     InitLocalPlayer();
                 }
@@ -870,11 +892,11 @@ namespace TextureMod
                 }
             }
 
-            if (UIScreen.currentScreens[1] != null)
+            if (screenOne != null)
             {
-                if (UIScreen.currentScreens[1]?.screenType == ScreenType.UNLOCKS_SKINS)
+                if (screenOne?.screenType == ScreenType.UNLOCKS_SKINS)
                 {
-                    var screenUnlocksSkins = UIScreen.currentScreens[1] as ScreenUnlocksSkins;
+                    var screenUnlocksSkins = screenOne as ScreenUnlocksSkins;
 
                     CharacterModel characterModel = screenUnlocksSkins.previewModel;
                     if (siluetteTimer > 0)
@@ -886,7 +908,7 @@ namespace TextureMod
                         }
                     }
 
-                    if (Input.GetKey(holdKey1))
+                    if (Input.GetKey(holdKey1.Value))
                     {
                         if (OnSkinChangeButtonDown())
                         {
@@ -896,14 +918,14 @@ namespace TextureMod
 
                     if (localCustomSkin != null) // Reload a skin from its file
                     {
-                        if (Input.GetKeyDown(reloadCustomSkin))
+                        if (Input.GetKeyDown(reloadCustomSkin.Value))
                         {
                             if (!intervalMode)
                             {
-                                if (reloadCustomSkinOnInterval)
+                                if (reloadCustomSkinOnInterval.Value)
                                 {
                                     intervalMode = true;
-                                    reloadCustomSkinTimer = skinReloadIntervalInFrames;
+                                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
                                 }
                             }
                             else intervalMode = false;
@@ -929,16 +951,16 @@ namespace TextureMod
                                     SetUnlocksCharacterModel(localCustomSkin.SkinTexture);
                                 }
                                 catch { LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_BACK); }
-                                reloadCustomSkinTimer = skinReloadIntervalInFrames;
+                                reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
                             }
                         }
                     }
                 }
-                else if (UIScreen.currentScreens[1]?.screenType == ScreenType.UNLOCKS_CHARACTERS)
+                else if (screenOne?.screenType == ScreenType.UNLOCKS_CHARACTERS)
                 {
                     localCustomSkin = null;
                     intervalMode = false;
-                    reloadCustomSkinTimer = skinReloadIntervalInFrames;
+                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
                 }
             }
 
@@ -959,7 +981,7 @@ namespace TextureMod
 
         public bool InMenu()
         {
-            if (UIScreen.currentScreens[0]?.screenType == ScreenType.MENU)
+            if (ScreenApi.CurrentScreens[0]?.screenType == ScreenType.MENU)
             {
                 return true;
             }
@@ -1113,7 +1135,8 @@ namespace TextureMod
             {
                 foreach (GameHudPlayerInfo ghpi in ghpis)
                 {
-                    if (ghpi.shownPlayer == playerEntity.player)
+                    ALDOKEMAOMB shownPlayer = Traverse.Create(ghpi).Field<ALDOKEMAOMB>("shownPlayer").Value;
+                    if (shownPlayer == playerEntity.player)
                     {
                         Renderer[] rs = ghpi.gameObject.transform.GetComponentsInChildren<Renderer>();
                         if (rs.Length > 0)
@@ -1123,7 +1146,7 @@ namespace TextureMod
                                 AssignTextureToRenderer(r, tex);
                             }
                         }
-                        ret = ghpi.shownPlayer.CJFLMDNNMIE;
+                        ret = shownPlayer.CJFLMDNNMIE;
                     }
                 }
             }
@@ -1132,9 +1155,10 @@ namespace TextureMod
 
         private void AssignTextureToPostGameHud(int playerNr, Texture tex)
         {
-            if (UIScreen.currentScreens[0]?.screenType == ScreenType.GAME_RESULTS)
+            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
+            if (screenZero?.screenType == ScreenType.GAME_RESULTS)
             {
-                PostScreen postScreen = UIScreen.currentScreens[0] as PostScreen;
+                PostScreen postScreen = screenZero as PostScreen;
                 Renderer[] rs = postScreen.playerBarsByPlayer[playerNr].gameObject.transform.GetComponentsInChildren<Renderer>();
 
                 for (int i = 0; i < rs.Length; i++)
@@ -1160,16 +1184,18 @@ namespace TextureMod
                 GameHudPlayerInfo playerHud = r.transform.GetComponentInParent<GameHudPlayerInfo>();
                 if (playerHud != null)
                 {
-                    character = playerHud.shownPlayer.DOFCCEDJODB;
-                    characterVariant = playerHud.shownPlayer.AIINAIDBHJI;
+                    ALDOKEMAOMB shownPlayer = Traverse.Create(playerHud).Field<ALDOKEMAOMB>("shownPlayer").Value;
+                    character = shownPlayer.DOFCCEDJODB;
+                    characterVariant = shownPlayer.AIINAIDBHJI;
                 }
                 else
                 {
                     CharacterModel characterModel = r.transform.GetComponentInParent<CharacterModel>();
                     if (characterModel != null)
                     {
-                        character = characterModel.character;
-                        characterVariant = characterModel.characterVariant;
+                        Traverse tv_charModel = Traverse.Create(characterModel);
+                        character = tv_charModel.Field<Character>("character").Value;
+                        characterVariant = tv_charModel.Field<CharacterVariant>("characterVariant").Value;
                     }
                     else
                     {
@@ -1239,9 +1265,10 @@ namespace TextureMod
 
         private void AssignSkinToWinnerModel()
         {
-            if (UIScreen.currentScreens[0]?.screenType == ScreenType.GAME_RESULTS)
+            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
+            if (screenZero?.screenType == ScreenType.GAME_RESULTS)
             {
-                PostScreen ps = UIScreen.currentScreens[0] as PostScreen;
+                PostScreen ps = screenZero as PostScreen;
 
                 if (localCustomSkin != null)
                 {
@@ -1339,19 +1366,22 @@ namespace TextureMod
 
         private CharacterModel GetCurrentCharacterModel(int playerNr = 0)
         {
-            if (UIScreen.currentScreens[0]?.screenType == ScreenType.PLAYERS)
+            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
+            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
+
+            if (screenZero?.screenType == ScreenType.PLAYERS)
             {
-                var screenPlayers = UIScreen.currentScreens[0] as ScreenPlayers;
+                var screenPlayers = screenZero as ScreenPlayers;
                 return screenPlayers.playerSelections[playerNr].characterModel;
             }
-            else if (UIScreen.currentScreens[1]?.screenType == ScreenType.UNLOCKS_SKINS)
+            else if (screenOne?.screenType == ScreenType.UNLOCKS_SKINS)
             {
-                var screenUnlocksSkins = UIScreen.currentScreens[1] as ScreenUnlocksSkins;
+                var screenUnlocksSkins = screenOne as ScreenUnlocksSkins;
                 return screenUnlocksSkins.previewModel;
             }
-            else if (UIScreen.currentScreens[1]?.screenType == ScreenType.UNLOCKS_CHARACTERS)
+            else if (screenOne?.screenType == ScreenType.UNLOCKS_CHARACTERS)
             {
-                var screenUnlocksCharacters = UIScreen.currentScreens[1] as ScreenUnlocksCharacters;
+                var screenUnlocksCharacters = screenOne as ScreenUnlocksCharacters;
                 return screenUnlocksCharacters.previewModel;
             }
             return null;
@@ -1528,8 +1558,11 @@ namespace TextureMod
 
         private void GetSkinForUnlocksModel(ScreenUnlocksCharacters screen, sbyte next = 0)
         {
-            Character character = screen.previewModel.character;
-            List<CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
+            Traverse tv_previewModel = Traverse.Create(screen.previewModel);
+            Character character = tv_previewModel.Field<Character>("character").Value;
+            CharacterVariant characterVariant = tv_previewModel.Field<CharacterVariant>("characterVariant").Value;
+
+            List <CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
             if (customSkins.Count == 0)
             {
                 Debug.Log($"[LLBMM] TextureMod: No skins for {character}");
@@ -1537,21 +1570,23 @@ namespace TextureMod
             }
 
             localCustomSkin = GetCustomSkin(character);
-            screen.previewModel.SetCharacterResultScreen(0, character, GetCustomSkinVariant(localCustomSkin.Variant, screen.previewModel.characterVariant));
+            screen.previewModel.SetCharacterResultScreen(0, character, GetCustomSkinVariant(localCustomSkin.Variant, characterVariant));
             siluetteTimer = 5;
         }
 
         private void SetSkinForUnlocksModel(ScreenUnlocksSkins screenUnlocksSkins, sbyte next = 0)
         {
-            List<CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[screenUnlocksSkins.character];
+
+            Character susCharacter = Traverse.Create(screenUnlocksSkins).Field<Character>("character").Value;
+            List<CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[susCharacter];
             if (customSkins.Count == 0)
             {
-                Debug.Log($"[LLBMM] TextureMod: No skins for {screenUnlocksSkins.character}");
+                Debug.Log($"[LLBMM] TextureMod: No skins for {susCharacter}");
                 return;
             }
 
-            localCustomSkin = GetCustomSkin(screenUnlocksSkins.character);
-            screenUnlocksSkins.ShowCharacter(screenUnlocksSkins.character, GetCustomSkinVariantShowcase(localCustomSkin.Variant), true);
+            localCustomSkin = GetCustomSkin(susCharacter);
+            screenUnlocksSkins.ShowCharacter(susCharacter, GetCustomSkinVariantShowcase(localCustomSkin.Variant), true);
             siluetteTimer = 5;
             SetCharacterModelTex(screenUnlocksSkins.previewModel, localCustomSkin?.SkinTexture);
         }
@@ -1968,7 +2003,7 @@ namespace TextureMod
             {
                 Color c1 = character == Character.BOSS ? tex.GetPixel(493, 510) : tex.GetPixel(82, 10);
                 Color c2 = character == Character.BOSS ? tex.GetPixel(508, 510) : tex.GetPixel(96, 10);
-                Material vismat = visualizer.FHAMOPAJHNJ;
+                Material vismat = Traverse.Create(visualizer).Field<Material>("FHAMOPAJHNJ").Value;
                 try
                 {
                     vismat.mainTexture = tex;

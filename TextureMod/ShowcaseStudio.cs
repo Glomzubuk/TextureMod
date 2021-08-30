@@ -1,18 +1,21 @@
-﻿using LLHandlers;
-using LLScreen;
+﻿
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LLHandlers;
+using LLScreen;
+using BepInEx.Configuration;
+using LLBML;
 
 namespace TextureMod
 {
     public class ShowcaseStudio : MonoBehaviour
     {
-        KeyCode enterShowcaseStudio = KeyCode.Tab;
-        KeyCode showcaseStudioHideHud = KeyCode.F3;
-        KeyCode showcaseStudioRotateCharacter = KeyCode.Mouse0;
-        KeyCode showcaseStudioMoveLight = KeyCode.Mouse3;
-        KeyCode showcaseStudioMoveCamera = KeyCode.Mouse2;
+        private ConfigEntry<KeyCode> enterShowcaseStudio;
+        private ConfigEntry<KeyCode> showcaseStudioHideHud;
+        private ConfigEntry<KeyCode> showcaseStudioRotateCharacter;
+        private ConfigEntry<KeyCode> showcaseStudioMoveLight;
+        private ConfigEntry<KeyCode> showcaseStudioMoveCamera;
 
         public bool showUI = true;
         public string skinName = "N/A";
@@ -45,6 +48,19 @@ namespace TextureMod
         float animationPos = 0;
         bool animate = true;
 
+
+        private void Start()
+        {
+            ConfigFile config = TextureMod.Instance.Config;
+            enterShowcaseStudio = config.Bind<KeyCode>("ShowcaseStudio", "enterShowcaseStudio", KeyCode.Tab);
+            showcaseStudioHideHud = config.Bind<KeyCode>("ShowcaseStudio", "showcaseStudioHideHud", KeyCode.F3);
+            showcaseStudioRotateCharacter = config.Bind<KeyCode>("ShowcaseStudio", "showcaseStudioRotateCharacter", KeyCode.Mouse0);
+            showcaseStudioMoveLight = config.Bind<KeyCode>("ShowcaseStudio", "showcaseStudioMoveLight", KeyCode.Mouse3);
+            showcaseStudioMoveCamera = config.Bind<KeyCode>("ShowcaseStudio", "showcaseStudioMoveCamera", KeyCode.Mouse2);
+
+            CustomStyle.InitStyle();
+        }
+
         private void OnGUI()
         {
             GUI.skin.box.alignment = TextAnchor.MiddleCenter;
@@ -63,11 +79,6 @@ namespace TextureMod
                     GUI.Box(new Rect(10, 10, 600, 35), "Press [" + enterShowcaseStudio + "] to enter Showcase Studio");
                 }
             }
-        }
-
-        void Start()
-        {
-            CustomStyle.InitStyle();
         }
 
         void ShowStudio()
@@ -167,15 +178,15 @@ namespace TextureMod
 
             if (SUS == null)
             {
-                if (UIScreen.currentScreens[1]?.screenType == ScreenType.UNLOCKS_SKINS)
+                if (ScreenApi.CurrentScreens[1]?.screenType == ScreenType.UNLOCKS_SKINS)
                 {
-                    SUS = UIScreen.currentScreens[1] as ScreenUnlocksSkins;
+                    SUS = ScreenApi.CurrentScreens[1] as ScreenUnlocksSkins;
                 }
             }
             else
             {
 
-                if (Input.GetKeyDown(showcaseStudioHideHud)) hideGUI = !hideGUI;
+                if (Input.GetKeyDown(showcaseStudioHideHud.Value)) hideGUI = !hideGUI;
 
                 Renderer[] rends = FindObjectsOfType<Renderer>();
                 foreach (Renderer r in rends)
@@ -183,7 +194,7 @@ namespace TextureMod
                     if (r.material.shader != mainShader && r.name.Contains("Effect")) r.material.shader = mainShader;
                 }
 
-                if (Input.GetKeyDown(enterShowcaseStudio) || (!showUI && (Controller.all.GetButtonDown(InputAction.ESC) || Controller.all.GetButtonDown(InputAction.BACK) || Controller.all.GetButtonDown(InputAction.OK) || Input.GetKeyDown(KeyCode.Mouse1))))
+                if (Input.GetKeyDown(enterShowcaseStudio.Value) || (!showUI && (Controller.all.GetButtonDown(InputAction.ESC) || Controller.all.GetButtonDown(InputAction.BACK) || Controller.all.GetButtonDown(InputAction.OK) || Input.GetKeyDown(KeyCode.Mouse1))))
                 {
                     ShowStudio();
                 }
@@ -218,28 +229,15 @@ namespace TextureMod
 
         private void FixedUpdate()
         {
-            if (TextureMod.Instance.MMI != null)
-            {
-                if (TextureMod.Instance.tc.InMenu())
-                {
-                    var mmi = TextureMod.Instance.MMI;
-                    enterShowcaseStudio = mmi.GetKeyCode(mmi.configKeys["(key)enterShowcaseStudio"]);
-                    showcaseStudioHideHud = mmi.GetKeyCode(mmi.configKeys["(key)showcaseStudioHideHud"]);
-                    showcaseStudioRotateCharacter = mmi.GetKeyCode(mmi.configKeys["(key)showcaseStudioRotateCharacter"]);
-                    showcaseStudioMoveCamera = mmi.GetKeyCode(mmi.configKeys["(key)showcaseStudioMoveCamera"]);
-                    showcaseStudioMoveLight = mmi.GetKeyCode(mmi.configKeys["(key)showcaseStudioMoveLight"]);
-                }
-            }
-
             if (cameraController != null)
             {
-                if (Input.GetKey(showcaseStudioMoveCamera)) cameraController.GetComponent<SmoothMouseLook>().isActive = true;
+                if (Input.GetKey(showcaseStudioMoveCamera.Value)) cameraController.GetComponent<SmoothMouseLook>().isActive = true;
                 else cameraController.GetComponent<SmoothMouseLook>().isActive = false;
             }
 
             if (lightController != null)
             {
-                if (Input.GetKey(showcaseStudioMoveLight))
+                if (Input.GetKey(showcaseStudioMoveLight.Value))
                 {
                     lightControllerCam.enabled = true;
                     camControllerCam.enabled = false;
@@ -255,7 +253,7 @@ namespace TextureMod
 
             if (characterModel != null)
             {
-                if (Input.GetKey(showcaseStudioRotateCharacter))
+                if (Input.GetKey(showcaseStudioRotateCharacter.Value))
                 {
                     int speed = 3;
                     if (Input.GetKey(KeyCode.A))
