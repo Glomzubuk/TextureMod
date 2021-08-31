@@ -36,7 +36,7 @@ namespace TextureMod
         ///
         /// When creating Harmony patches, prefer using this ID for Harmony instances as well.
         /// </summary>
-        public const string PLUGIN_ID = "org.bepinex.plugins.llb.texturemod";
+        public const string PLUGIN_ID = "no.mrgentle.plugins.llb.texturemod";
 
         /// <summary>
         /// Version of the plugin. Must be in form <major>.<minor>.<build>.<revision>.

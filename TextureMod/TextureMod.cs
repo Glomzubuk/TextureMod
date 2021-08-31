@@ -13,6 +13,8 @@ namespace TextureMod
 {
     [BepInPlugin(PluginInfos.PLUGIN_ID, PluginInfos.PLUGIN_NAME, PluginInfos.PLUGIN_VERSION)]
     [BepInProcess("LLBlaze.exe")]
+    [BepInDependency("fr.glomzubuk.plugins.llb.llbml", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("no.mrgentle.plugins.llb.modmenu", BepInDependency.DependencyFlags.SoftDependency)]
     public class TextureMod : BaseUnityPlugin
     {
         #region legacystrings
@@ -53,11 +55,11 @@ namespace TextureMod
             if (ownedDLCs.Count > 0) hasDLC = true;
 
 
-            Logger.LogInfo("Searching ModMenuEx");
-            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("org.bepinex.plugins.llb.modmenuex"))
+            Logger.LogInfo("Searching ModMenu");
+            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("no.mrgentle.plugins.llb.modmenu"))
             {
-                Logger.LogInfo("Registering to ModMenuEx");
-                ModMenuEx.ModMenuEx.RegisterMod(this.Info);
+                Logger.LogInfo("Registering to ModMenu");
+                LLModMenu.LLModMenu.RegisterMod(this.Info);
             }
 
             Config.Bind("General", "text3", "Wondering how to assign skins and in what part of the game you can do so?", "modmenu_text");
