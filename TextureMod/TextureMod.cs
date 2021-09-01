@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using LLHandlers;
 using LLScreen;
-using Multiplayer;
 using Steamworks;
 using BepInEx;
 using LLBML;
@@ -59,7 +58,7 @@ namespace TextureMod
             if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("no.mrgentle.plugins.llb.modmenu"))
             {
                 Logger.LogInfo("Registering to ModMenu");
-                LLModMenu.LLModMenu.RegisterMod(this.Info);
+                ModMenu.ModMenu.RegisterMod(this.Info);
             }
 
             Config.Bind("General", "text3", "Wondering how to assign skins and in what part of the game you can do so?", "modmenu_text");
