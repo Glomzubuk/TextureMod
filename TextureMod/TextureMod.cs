@@ -12,7 +12,7 @@ namespace TextureMod
 {
     [BepInPlugin(PluginInfos.PLUGIN_ID, PluginInfos.PLUGIN_NAME, PluginInfos.PLUGIN_VERSION)]
     [BepInProcess("LLBlaze.exe")]
-    [BepInDependency("fr.glomzubuk.plugins.llb.llbml", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency(LLBML.PluginInfos.PLUGIN_ID, BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("no.mrgentle.plugins.llb.modmenu", BepInDependency.DependencyFlags.SoftDependency)]
     public class TextureMod : BaseUnityPlugin
     {
@@ -25,7 +25,7 @@ namespace TextureMod
         public string debug = "";
 
         #region instances
-        public static TextureMod Instance { get; private set; }
+        public static TextureMod Instance { get; private set; } = null;
         public TextureChanger tc = null;
         public TextureLoader tl = null;
         public ExchangeClient ec = null;
@@ -54,21 +54,17 @@ namespace TextureMod
             if (ownedDLCs.Count > 0) hasDLC = true;
 
 
-            Logger.LogInfo("Searching ModMenu");
-            if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("no.mrgentle.plugins.llb.modmenu"))
-            {
-                Logger.LogInfo("Registering to ModMenu");
-                ModMenu.ModMenu.RegisterMod(this.Info);
-            }
+            LLBML.Utils.ModDependenciesUtils.RegisterToModMenu(this.Info, new List<string> {
+                "Wondering how to assign skins and in what part of the game you can do so?",
+                "Simply hold the 'Enable Skin Changer' button and press either the `Next skin` or the `Previous Skin` buttons to cycle skins",
+                "Skins can be assigned in Ranked Lobbies, 1v1 Lobbies, FFA Lobbies(Only for player 1 and 2) and in the skin unlock screen for a character or in ShowcaseStudio",
+                "If you select random in the lobby and try to assign a custom skin you will be given a random character and random skin. In online lobbies you will be set to ready, and your buttons will become unavailable unless you've deactivated 'Lock Buttons On Random'",
+                " ",
+                "If you wish to real time edit your skins, use the F5 button to reload your skin whenever you're in training mode or in the character skin unlock screen",
+                "You can also enable the interval mode and have it automatically reload the current custom skin every so often. Great for dual screen, or windowed mode setups (Does not work in training mode)",
+                "This mod was written by MrGentle"
+            });
 
-            Config.Bind("General", "text3", "Wondering how to assign skins and in what part of the game you can do so?", "modmenu_text");
-            Config.Bind("General", "text4", "Simply hold the 'Enable Skin Changer' button and press either the `Next skin` or the `Previous Skin` buttons to cycle skins", "modmenu_text");
-            Config.Bind("General", "text5", "Skins can be assigned in Ranked Lobbies, 1v1 Lobbies, FFA Lobbies(Only for player 1 and 2) and in the skin unlock screen for a character or in ShowcaseStudio", "modmenu_text");
-            Config.Bind("General", "text6", "If you select random in the lobby and try to assign a custom skin you will be given a random character and random skin. In online lobbies you will be set to ready, and your buttons will become unavailable unless you've deactivated 'Lock Buttons On Random'", "modmenu_text");
-            Config.Bind("General", "text7", " ", "modmenu_text");
-            Config.Bind("General", "text8", "If you wish to real time edit your skins, use the F5 button to reload your skin whenever you're in training mode or in the character skin unlock screen", "modmenu_text");
-            Config.Bind("General", "text9", "You can also enable the interval mode and have it automatically reload the current custom skin every so often. Great for dual screen, or windowed mode setups (Does not work in training mode)", "modmenu_text");
-            Config.Bind("General", "text1", "This mod was written by MrGentle", "modmenu_text");
         }
 
         private void Update()
