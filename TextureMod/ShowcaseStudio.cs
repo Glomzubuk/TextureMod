@@ -76,7 +76,7 @@ namespace TextureMod
                 if (SUS != null && !hideGUI)
                 {
                     GUI.skin.box.fontSize = 22;
-                    GUI.Box(new Rect(10, 10, 600, 35), "Press [" + enterShowcaseStudio + "] to enter Showcase Studio");
+                    GUI.Box(new Rect(10, 10, 600, 35), "Press [" + enterShowcaseStudio.Value.ToString() + "] to enter Showcase Studio");
                 }
             }
         }
@@ -394,27 +394,27 @@ namespace TextureMod
             {
                 GUILayout.Space(30);
                 GUILayout.Box("General");
-                GUILayout.Label("Hide GUI: [" + showcaseStudioHideHud + "]");
-                GUILayout.Label("Exit ShowcaseStudio: [" + enterShowcaseStudio + ", ESC or Right Click]");
-                GUILayout.Label("Reload current skin [" + TextureMod.Instance.tc.reloadCustomSkin + "]");
-                GUILayout.Label("Reimport skin library [" + TextureMod.Instance.tc.reloadEntireSkinLibrary + "]");
+                GUILayout.Label("Hide GUI: [" + showcaseStudioHideHud.Value + "]");
+                GUILayout.Label("Exit ShowcaseStudio: [" + enterShowcaseStudio.Value + ", ESC or Right Click]");
+                GUILayout.Label("Reload current skin [" + TextureMod.Instance.tc.reloadCustomSkin.Value + "]");
+                GUILayout.Label("Reimport skin library [" + TextureMod.Instance.tc.reloadEntireSkinLibrary.Value + "]");
 
                 GUILayout.Space(20);
 
                 GUILayout.Box("Camera Movement");
-                GUILayout.Label("Hold [" + showcaseStudioMoveCamera + "] and move the mouse to tilt the camera (Bindable in mod settings)");
-                GUILayout.Label("While holding [" + showcaseStudioMoveCamera + "] you can press WASD, left shift and space to move the camera around");
+                GUILayout.Label("Hold [" + showcaseStudioMoveCamera.Value + "] and move the mouse to tilt the camera (Bindable in mod settings)");
+                GUILayout.Label("While holding [" + showcaseStudioMoveCamera.Value + "] you can press WASD, left shift and space to move the camera around");
 
                 GUILayout.Space(20);
 
                 GUILayout.Box("Light Movement");
-                GUILayout.Label("Hold [" + showcaseStudioMoveLight + "] and move the mouse to tilt the light (Bindable in mod settings)");
-                GUILayout.Label("While holding [" + showcaseStudioMoveLight + "] you can press WASD, left shift and space to move the light around");
+                GUILayout.Label("Hold [" + showcaseStudioMoveLight.Value + "] and move the mouse to tilt the light (Bindable in mod settings)");
+                GUILayout.Label("While holding [" + showcaseStudioMoveLight.Value + "] you can press WASD, left shift and space to move the light around");
 
                 GUILayout.Space(20);
 
                 GUILayout.Box("Character Rotation");
-                GUILayout.Label("Hold [" + showcaseStudioRotateCharacter + "] (Bindable in mod settings) and press WASD, left shift and space to rotate the model");
+                GUILayout.Label("Hold [" + showcaseStudioRotateCharacter.Value + "] (Bindable in mod settings) and press WASD, left shift and space to rotate the model");
 
             }
             GUILayout.EndVertical();

@@ -51,32 +51,30 @@ namespace TextureMod
 
                 foreach (string characterFolder in chars)
                 {
-                    int indexer = 0;
                     List<CustomSkin> customSkins = new List<CustomSkin>();
                     Character character = StringToChar(Path.GetFileName(characterFolder));
                     bool hasDLC = CheckHasDLCForCharacter(character);
 
                     foreach (string file in Directory.GetFiles(characterFolder, "*.png", SearchOption.TopDirectoryOnly))
                     {
-                        ModelVariant modelVariant = ModelVariantFromFile(file);
+                        ModelVariant modelVariant = VariantHelper.GetModelVariantFromFilePath(file);
                         if (modelVariant == ModelVariant.DLC && hasDLC == false)
                         {
                             continue;
                         }
                         string cleanName = Path.GetFileNameWithoutExtension(file);
                         cleanName = regex.Replace(cleanName, m => { return ""; });
-                        customSkins.Add(new CustomSkin(indexer, character, (CustomSkin.VariantType)modelVariant, cleanName, "", file));
-                        indexer++;
+                        customSkins.Add(new CustomSkin(character, modelVariant, cleanName, null, file));
                     }
 
-                    foreach (string dir in Directory.GetDirectories(characterFolder))
+                    foreach (string authorDir in Directory.GetDirectories(characterFolder))
                     {
-                        string authorName = Path.GetFileName(dir);
+                        string authorName = Path.GetFileName(authorDir);
                         authorName = regex.Replace(authorName, m => { return ""; });
 
-                        foreach (string file in Directory.GetFiles(dir, "*.png", SearchOption.TopDirectoryOnly))
+                        foreach (string file in Directory.GetFiles(authorDir, "*.png", SearchOption.TopDirectoryOnly))
                         {
-                            ModelVariant modelVariant = ModelVariantFromFile(file);
+                            ModelVariant modelVariant = VariantHelper.GetModelVariantFromFilePath(file);
                             if (modelVariant == ModelVariant.DLC && hasDLC == false)
                             {
                                 continue;
@@ -84,8 +82,7 @@ namespace TextureMod
 
                             string cleanName = Path.GetFileNameWithoutExtension(file);
                             cleanName = regex.Replace(cleanName, m => { return ""; });
-                            customSkins.Add(new CustomSkin(indexer, character, (CustomSkin.VariantType)modelVariant, cleanName, authorName, file));
-                            indexer++;
+                            customSkins.Add(new CustomSkin(character, modelVariant, cleanName, authorName, file));
                         }
                     }
 
@@ -103,6 +100,9 @@ namespace TextureMod
             }
         }
 
+
+
+
         bool CheckHasDLCForCharacter(Character character)
         {
             foreach (Character DLC in TextureMod.ownedDLCs)
@@ -115,28 +115,6 @@ namespace TextureMod
             return false;
         }
 
-        public enum ModelVariant
-        {
-            None,
-            Default,
-            Alternative,
-            DLC,
-        }
-
-        ModelVariant ModelVariantFromFile(string path)
-        {
-            string fileName = Path.GetFileNameWithoutExtension(path);
-
-            if (fileName.Contains("_ALT2"))
-            {
-                return ModelVariant.DLC;
-            }
-            else if (fileName.Contains("_ALT"))
-            {
-                return ModelVariant.Alternative;
-            }
-            else return ModelVariant.Default;
-        }
 
         public Character StringToChar(string charString)
         {

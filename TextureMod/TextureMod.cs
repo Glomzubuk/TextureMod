@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using LLHandlers;
 using LLScreen;
 using Steamworks;
 using BepInEx;
+using BepInEx.Logging;
 using LLBML;
 
 
@@ -26,17 +28,18 @@ namespace TextureMod
 
         #region instances
         public static TextureMod Instance { get; private set; } = null;
+        public static ManualLogSource Log { get; private set; } = null;
         public TextureChanger tc = null;
         public TextureLoader tl = null;
-        public ExchangeClient ec = null;
         public ModDebugging md = null;
-        #endregion
-
-        public static string ResourceFolder { get { return BepInEx.Utility.CombinePaths(Paths.ManagedPath, "TextureModResources"); } }
-
-        public string retSkin = "";
         public EffectChanger effectChanger = null;
         public ShowcaseStudio showcaseStudio = null;
+        #endregion
+
+        public static string ResourceFolder { get; private set; }
+        public static SkinCachesHandler skinCachesHandler;
+
+        public string retSkin = "";
 
         public static List<Character> ownedDLCs = new List<Character>();
         public static bool hasDLC = false;
@@ -44,12 +47,16 @@ namespace TextureMod
 
         public void Awake()
         {
+            ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
+            skinCachesHandler = new SkinCachesHandler();
             Instance = this;
+            Log = this.Logger;
         }
 
         private void Start()
         {
             UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
+            EffectsHandler.Init();
             CheckIfPLayerHasDLC();
             if (ownedDLCs.Count > 0) hasDLC = true;
 
@@ -75,7 +82,6 @@ namespace TextureMod
                 LoadingScreen.SetLoading(this.Info, false);
             }
             if (tc == null) { tc = gameObject.AddComponent<TextureChanger>(); }
-            if (ec == null) { ec = gameObject.AddComponent<ExchangeClient>(); }
             if (md == null) { md = gameObject.AddComponent<ModDebugging>(); }
             if (effectChanger == null) { effectChanger = gameObject.AddComponent<EffectChanger>(); }
             if (showcaseStudio == null) showcaseStudio = gameObject.AddComponent<ShowcaseStudio>();

@@ -47,7 +47,7 @@ namespace TextureMod
 
         private void Start()
         {
-            string parryFolder = Path.Combine(effectsFolder, "parry");
+            string parryFolder = Path.Combine(effectsFolder, "Parry");
             parryActiveBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveBG.png"));
             parryActiveMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveMG.png"));
             parryActiveFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveFG.png"));

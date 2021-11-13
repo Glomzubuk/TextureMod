@@ -40,19 +40,24 @@ namespace TextureMod
 
             string texName = Path.GetFileNameWithoutExtension(fullPath);
 
-            Texture2D tex;
-            tex = new Texture2D(512, 512, TextureFormat.RGBA32, true, false)
+
+            Texture2D tex = NewDefaultTexture();
+            tex.name = texName;
+            tex.LoadImage(spriteBytes); //This resizes the texture width and height
+
+            return tex;
+        }
+
+        public static Texture2D NewDefaultTexture(int width = 512, int height = 512)
+        {
+            return new Texture2D(width, height, TextureFormat.RGBA32, true, false)
             {
-                name = texName,
                 filterMode = FilterMode.Trilinear,
                 anisoLevel = 9,
                 mipMapBias = -0.5f,
             };
-            tex.LoadImage(spriteBytes); //This resizes the texture width and height
-
-
-            return tex;
         }
+
 #if oldCode
 
         public static Texture2D ReloadSkin(Character _character, Texture2D _texture)
