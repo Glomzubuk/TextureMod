@@ -1,8 +1,15 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Linq;
+using HarmonyLib;
 using UnityEngine;
 using GameplayEntities;
+using LLGUI;
 using Multiplayer;
+using LLHandlers;
+using LLScreen;
+using LLBML;
 using LLBML.Players;
+using LLBML.States;
 
 namespace TextureMod.TMPlayer
 {
@@ -14,63 +21,38 @@ namespace TextureMod.TMPlayer
         public static int localPlayerNr => P2P.localPeer?.playerNr ?? 0;
 
         public int skinIndex = -1;
-        public LocalTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) : base(player, skin, model)
+        public LocalTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) 
+            : base(player, skin ?? CheckForStoredSkin(player), model)
         {
         }
 
-
+        private static CustomSkin CheckForStoredSkin(Player player)
+        {
+            return null;
+        }
 
         public override void Update()
         {
             base.Update();
-            if (this.Player != null && randomizedChar == false) // Determine and assign skin to local player
+
+            if (this.Player != null) // Determine and assign skin to local player
             {
                 //Player.Selected - Has the Player selected their character yet.
                 if (this.Player.selected)
                 {
 
-                    if (localPlayer.Player.CharacterSelected != localLobbyPlayer.CharacterSelected || localPlayerCharVar != localLobbyPlayer.CharacterVariant)
-                    {
-                        if (assignFirstSkinOnCharacterSelection.Value)
-                        {
-                            this.NextSkin();
-                        }
-                        else
-                        {
-                            initLocalPlayer = true;
-                        }
-                        localPlayerChar = localLobbyPlayer.CharacterSelected;
-                        localPlayerCharVar = localLobbyPlayer.CharacterVariant;
-                    }
-
-                    if (HandleSwitchSkinInputs()) changeSkin = true;
-
-                    if (changeSkin && InLobby(GameType.Any)) // Assign skin to local player
-                    {
+                    if (HandleSwitchSkinInputs()) // Assign skin to local player
+                    {/*
                         if (setAntiMirrior)
                         {
                             string opponentSkinPath = Path.Combine(imageFolder, "opponent.png");
                             opponentCustomTexture = TextureHelper.LoadPNG(opponentSkinPath);
                             setAntiMirrior = false;
                         }
-
-                        HDLIJDBFGKN gameStatesOnlineLobby = UnityEngine.Object.FindObjectOfType<HDLIJDBFGKN>();
-                        if (TextureChanger.InLobby(GameType.Online))
-                        {
-                            AccessTools.Method(typeof(HDLIJDBFGKN), "JPNNBHNHHJC").Invoke(gameStatesOnlineLobby, null); // AutoReadyReset
-                            AccessTools.Method(typeof(HDLIJDBFGKN), "EMFKKOJEIPN").Invoke(gameStatesOnlineLobby, new object[] { this.Player.nr, false }); // SetReady
-
-                            AccessTools.Method(typeof(HDLIJDBFGKN), "BFIGLDLHKPO").Invoke(gameStatesOnlineLobby, null); // UpdateReadyButton
-                            AccessTools.Method(typeof(HDLIJDBFGKN), "OFGNNIBJOLH").Invoke(gameStatesOnlineLobby, new object[] { this.Player }); // SendPlayerState
-                                                                                                                                                /*
-                                                                                                                                                gameStatesOnlineLobby.JPNNBHNHHJC(); // gameStatesOnlineLobby.AutoReadyReset
-                                                                                                                                                gameStatesOnlineLobby.EMFKKOJEIPN(localLobbyPlayer.CJFLMDNNMIE, false); // SetReady
-                                                                                                                                                gameStatesOnlineLobby.BFIGLDLHKPO(); // gameStatesOnlineLobby.UpdateReadyButton
-                                                                                                                                                gameStatesOnlineLobby.OFGNNIBJOLH(localLobbyPlayer); // gameStatesOnlineLobby.SendPlayerState
-                                                                                                                                                */
-                        }
-
+                        */
+                        GameStatesLobbyUtils.RefreshLocalPlayerState();
                         bool isRandom = false;
+                        /*
                         if (this.Player.CharacterSelectedIsRandom) // Randomize skin and char
                         {
                             //Creats a list of characters that have no skins and should be excluded from the character randomizer
@@ -88,13 +70,7 @@ namespace TextureMod.TMPlayer
 
                             if (InLobby(GameType.Online))
                             {
-                                AccessTools.Method(typeof(HDLIJDBFGKN), "EMFKKOJEIPN").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer.CJFLMDNNMIE, true }); // SetReady
-                                AccessTools.Method(typeof(HDLIJDBFGKN), "OFGNNIBJOLH").Invoke(gameStatesOnlineLobby, new object[] { localLobbyPlayer }); // SendPlayerState
-                                                                                                                                                         /*
-                                                                                                                                                         gameStatesOnlineLobby.EMFKKOJEIPN(localLobbyPlayer.CJFLMDNNMIE, true); // SetReady
-                                                                                                                                                         gameStatesOnlineLobby.OFGNNIBJOLH(localLobbyPlayer); //Send player state (Signalizes that we have changes characters and that we are ready)
-                                                                                                                                                         */
-
+                                GameStatesLobbyUtils.RefreshLocalPlayerState();
                                 if (lockButtonsOnRandom.Value)
                                 {
                                     foreach (LLButton b in buttons) b.SetActive(false);
@@ -103,28 +79,179 @@ namespace TextureMod.TMPlayer
                             }
 
                             isRandom = true;
-                        }
+                        }*/
 
-                        SetLocalCustomSkin(localLobbyPlayer.CharacterSelected, isRandom);
-
+                        NextSkin(this.Player.CharacterSelected, this.Player.CharacterSelectedIsRandom);
+                        /*
                         if (TextureChanger.InLobby(GameType.Online))
                         {
                             doSkinPost = true;
                             postTimer = 0;
                             setAntiMirrior = false;
                             calculateMirror = true;
+                        }*/
+                    }
+                }
+
+
+            }
+
+            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
+            if (screenOne != null)
+            {
+                if (screenOne?.screenType == ScreenType.UNLOCKS_SKINS)
+                {
+                    var screenUnlocksSkins = screenOne as ScreenUnlocksSkins;
+
+                    CharacterModel previewModel = screenUnlocksSkins.previewModel;
+                    /*if (silouetteTimer > 0)
+                    {
+                        if (customSkin != null)
+                        {
+                            characterModel.SetSilhouette(false);
+                            AssignTextureToCharacterModelRenderers(characterModel, localPlayer.customSkin.Texture);
+                        }
+                    }*/
+                    /*
+                    if (Input.GetKey(holdKey1.Value))
+                    {
+                        if (OnSkinChangeButtonDown())
+                        {
+                            SetSkinForUnlocksModel(screenUnlocksSkins);
                         }
                     }
+
+                    if (localCustomSkin != null) // Reload a skin from its file
+                    {
+                        if (Input.GetKeyDown(reloadCustomSkin.Value))
+                        {
+                            if (!intervalMode)
+                            {
+                                if (reloadCustomSkinOnInterval.Value)
+                                {
+                                    intervalMode = true;
+                                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
+                                }
+                            }
+                            else intervalMode = false;
+
+                            try
+                            {
+                                localCustomSkin.ReloadSkin();
+                                //localTex = TextureHelper.ReloadSkin(screenUnlocksSkins.character, localTex);
+                                SetUnlocksCharacterModel(localCustomSkin.Texture);
+                                LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_CONFIRM);
+                            }
+                            catch { LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_BACK); }
+                        }
+
+                        if (intervalMode)
+                        {
+                            if (reloadCustomSkinTimer == 0)
+                            {
+                                try
+                                {
+                                    localCustomSkin.ReloadSkin();
+                                    //localTex = TextureHelper.ReloadSkin(screenUnlocksSkins.character, localTex);
+                                    SetUnlocksCharacterModel(localCustomSkin.Texture);
+                                }
+                                catch { LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_BACK); }
+                                reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
+                            }
+                        }
+                    }*/
+                }
+                else if (screenOne?.screenType == ScreenType.UNLOCKS_CHARACTERS)
+                {
+                    /*
+                    localCustomSkin = null;
+                    intervalMode = false;
+                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
+                    */
                 }
             }
         }
 
         public void NextSkin(Character character, bool random = false)
         {
-            if (customSkin.Character != Player.CharacterSelected && !Player.CharacterSelectedIsRandom)
+            if (customSkin?.Character != Player.CharacterSelected && !Player.CharacterSelectedIsRandom)
             {
+                Logger.LogDebug("NextSkin NYI");
+                SetCustomSkin(TextureLoader.Instance.newCharacterTextures[character].First().CustomSkin);
+            }
+        }
+
+        public void PreviousSkin(Character character, bool random = false)
+        {
+            if (customSkin?.Character != Player.CharacterSelected && !Player.CharacterSelectedIsRandom)
+            {
+                Logger.LogDebug("PreviousSkin NYI");
 
             }
         }
+
+
+
+
+        void DisableCharacterButtons()
+        {
+            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
+            if (Player.CharacterSelectedIsRandom && screenOne != null) // If you have randomized your character, activate buttons again
+            {
+                if (screenOne.screenType == ScreenType.PLAYERS_STAGE || screenOne.screenType == ScreenType.PLAYERS_STAGE_RANKED)
+                {
+                    LLButton[] buttons = UnityEngine.Object.FindObjectsOfType<LLButton>();
+                    foreach (LLButton b in buttons) b.SetActive(true);
+                }
+            }
+        }
+
+        private bool HandleSwitchSkinInputs()
+        {
+            if (GameStates.IsInLobby()) {
+                LLButton[] buttons = UnityEngine.Object.FindObjectsOfType<LLButton>();
+
+                if (TextureMod.Instance.tc.useOnlySetKey.Value == false)
+                {
+                    if (Input.GetKey(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+                    {
+                        if (OnSkinChangeButtonDown())
+                        {
+                            return true;
+                        }
+
+                        foreach (LLButton b in buttons)
+                        {
+                            b.SetActive(false); //Deactivate buttons
+                        }
+                    }
+                    else if (Input.GetKeyUp(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+                    {
+                        foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
+                    }
+                }
+                else if (OnSkinChangeButtonDown())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        private bool OnSkinChangeButtonDown()
+        {
+            if (Input.GetKeyDown(TextureMod.Instance.tc.nextSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_RIGHT))
+            {
+                return true;
+            }
+            else if (Input.GetKeyDown(TextureMod.Instance.tc.previousSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_LEFT))
+            {
+                PreviousSkin(this.CustomSkinCharacter);
+                return true;
+            }
+            else return false;
+        }
+
     }
 }

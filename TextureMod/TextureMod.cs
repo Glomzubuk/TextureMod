@@ -8,6 +8,7 @@ using Steamworks;
 using BepInEx;
 using BepInEx.Logging;
 using LLBML;
+using TextureMod.TMPlayer;
 
 
 namespace TextureMod
@@ -31,6 +32,7 @@ namespace TextureMod
         public static ManualLogSource Log { get; private set; } = null;
         public TextureChanger tc = null;
         public TextureLoader tl = null;
+        public TexModPlayerManager tmpl = null;
         public ModDebugging md = null;
         public EffectChanger effectChanger = null;
         public ShowcaseStudio showcaseStudio = null;
@@ -55,8 +57,9 @@ namespace TextureMod
 
         private void Start()
         {
-            UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
+            //UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
             EffectsHandler.Init();
+            ExchangeClient.Init();
             CheckIfPLayerHasDLC();
             if (ownedDLCs.Count > 0) hasDLC = true;
 
@@ -79,8 +82,9 @@ namespace TextureMod
             if (tl == null) { 
                 tl = gameObject.AddComponent<TextureLoader>(); 
             } else if(tl.loadingExternalFiles == false) {
-                LoadingScreen.SetLoading(this.Info, false);
+                //LoadingScreen.SetLoading(this.Info, false);
             }
+            if (tmpl == null) { tmpl = gameObject.AddComponent<TexModPlayerManager>(); }
             if (tc == null) { tc = gameObject.AddComponent<TextureChanger>(); }
             if (md == null) { md = gameObject.AddComponent<ModDebugging>(); }
             if (effectChanger == null) { effectChanger = gameObject.AddComponent<EffectChanger>(); }

@@ -1,23 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using GameplayEntities;
-using LLGUI;
-using LLHandlers;
 using LLScreen;
-using Multiplayer;
-using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using LLBML;
-using LLBML.Players;
-using LLBML.Math;
-using LLBML.States;
-using TextureMod.TMPlayer;
-
 namespace TextureMod
 {
     public class TextureChanger : MonoBehaviour
@@ -26,17 +16,12 @@ namespace TextureMod
         #region General Fields
         public static string imageFolder = Path.Combine(TextureMod.ResourceFolder, "Images");
 
-        private JOFJHDJHJGI gameState => GameStates.GetCurrent();
-        private GameMode currentGameMode => StateApi.CurrentGameMode;
-        private bool IsOnline => NetworkApi.IsOnline;
 
-        public static bool InMatch => World.instance != null && (DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.CDOFDJMLGLO || DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.LGILIJKMKOD) && !LLScreen.UIScreen.loadingScreenActive;
+        //public static bool InMatch => World.instance != null && (DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.CDOFDJMLGLO || DNPFJHMAIBP.HHMOGKIMBNM() == JOFJHDJHJGI.LGILIJKMKOD) && !LLScreen.UIScreen.loadingScreenActive;
         public string[] debug = new string[20];
         public bool doSkinPost = false;
         public int postTimer = 0;
         private int postTimerLimit = 30;
-
-        private bool doMirrorCheck = true;
 
         private System.Random rng = new System.Random();
         private bool randomizedChar = false;
@@ -50,34 +35,21 @@ namespace TextureMod
 
         #endregion
         #region Config Fields
-        private ConfigEntry<KeyCode> holdKey1;
-        private ConfigEntry<KeyCode> nextSkin;
-        private ConfigEntry<KeyCode> previousSkin;
-        private ConfigEntry<KeyCode> cancelKey;
+        public ConfigEntry<KeyCode> holdKey1;
+        public ConfigEntry<KeyCode> nextSkin;
+        public ConfigEntry<KeyCode> previousSkin;
+        public ConfigEntry<KeyCode> cancelKey;
         public ConfigEntry<KeyCode> reloadCustomSkin;
         public ConfigEntry<KeyCode> reloadEntireSkinLibrary;
-        private ConfigEntry<bool> useOnlySetKey;
-        private ConfigEntry<bool> neverApplyOpponentsSkin;
+        public ConfigEntry<bool> useOnlySetKey;
+        public ConfigEntry<bool> neverApplyOpponentsSkin;
         public ConfigEntry<bool> showDebugInfo;
-        private ConfigEntry<bool> lockButtonsOnRandom;
+        public ConfigEntry<bool> lockButtonsOnRandom;
         public ConfigEntry<bool> reloadCustomSkinOnInterval;
         public ConfigEntry<int> skinReloadIntervalInFrames;
         public ConfigEntry<bool> assignFirstSkinOnCharacterSelection;
         #endregion
 
-        public List<TexModPlayer> tmPlayers = new List<TexModPlayer>(Player.MAX_PLAYERS);
-
-        public List<OpponentTexModPlayer> Opponents {
-            get
-            {
-                return tmPlayers.Where((tmPlayer) => tmPlayer != null && tmPlayer.GetType() == typeof(OpponentTexModPlayer)).Cast<OpponentTexModPlayer>().ToList();
-            }
-        }
-
-        public TexModPlayer localPlayer {
-            get { return tmPlayers[NetworkApi.LocalPlayerNumber]; }
-            set { tmPlayers[NetworkApi.LocalPlayerNumber] = value; }
-        }
         public int localSkinIndex = -1;
 
         private void Start()
@@ -87,11 +59,12 @@ namespace TextureMod
 
         private void OnGUI()
         {
-            ShowSkinNametags();
+            //ShowSkinNametags();
         }
 
         private void FixedUpdate()
         {
+            /*
             if (!neverApplyOpponentsSkin.Value)
             {
                 if (doSkinPost) { postTimer++; }
@@ -104,7 +77,6 @@ namespace TextureMod
                         try
                         {
                             ExchangeClient.SendCustomSkinChange(localPlayer.customSkin.SkinHash);
-                            //StartCoroutine(TextureMod.Instance.ec.PostSkin(LocalLobbyPlayer.Player.peer.peerId, localPlayerChar, localPlayerCharVar, localCustomSkin.Texture));
                         }
                         catch (Exception ex)
                         {
@@ -113,47 +85,17 @@ namespace TextureMod
                     }
                 }
             }
-
+            */
+            /*
             if (silouetteTimer > 0) silouetteTimer--;
-            if (reloadCustomSkinTimer > 0) reloadCustomSkinTimer--;
+            if (reloadCustomSkinTimer > 0) reloadCustomSkinTimer--;*/
         } //POST and GET requests
 
         private void Update()
         {
-#if DEBUG
-            if (Input.GetKeyDown(KeyCode.PageDown))
-            {
-                InitLocalPlayer();
-                InitOpponentPlayer();
-            } 
-#endif
 
-            DebugOptions();
-            /*
-            if (localPlayer != null)
-            {
-                localPlayer.Update();
-            }
-            else
-            {
-                InitLocalPlayer();
-            }
-            */
-            foreach (TexModPlayer tmPlayer in tmPlayers)
-            {
-                if (tmPlayer != null)
-                {
-                    tmPlayer.Update();
-                }
-            }
-
-            DisableCharacterButtons();
-
-            CheckMirror();
 
             InLobbyOrGameChecks();
-
-            UpdateCustomSkinsInMenu();
         }
 
         void LateUpdate()
@@ -165,128 +107,11 @@ namespace TextureMod
         }
 
 
-        private void ShowSkinNametags()
-        {
-            if (localPlayer.customSkin != null) //Show skin nametags
-            {
-                string labelTxt = localPlayer.customSkin.GetSkinLabel();
-                GUI.skin.box.wordWrap = false;
-                GUIContent content;
-                if (!intervalMode) content = new GUIContent(labelTxt);
-                else content = new GUIContent(labelTxt + " (Refresh " + "[" + reloadCustomSkinTimer + "]" + ")");
-                GUI.skin.box.alignment = TextAnchor.MiddleCenter;
-                GUI.skin.box.fontSize = 22;
-
-                ScreenBase screenOne = ScreenApi.CurrentScreens[1];
-
-                if (InLobby(GameType.Any))
-                {
-                    if (screenOne == null)
-                    {
-                        switch (currentGameMode)
-                        {
-                            case GameMode.TUTORIAL:
-                            case GameMode.TRAINING:
-                                GUI.Box(new Rect((Screen.width / 8), (Screen.height / 12.5f), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                            case GameMode._1v1:
-                                if (localPlayer.Player.nr == 0) GUI.Box(new Rect(Screen.width / 10, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt); //Check if local player is the player with ID 0
-                                else GUI.Box(new Rect((Screen.width / 20) * 12.95f, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                            case GameMode.FREE_FOR_ALL:
-                            case GameMode.COMPETITIVE:
-                                if (localPlayer.Player.nr == 0) GUI.Box(new Rect(0 + Screen.width / 250, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                else GUI.Box(new Rect((Screen.width / 4) + (Screen.width / 250), Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                        }
-                    }
-                }
-
-                if (screenOne != null)
-                {
-                    if (screenOne.screenType == ScreenType.UNLOCKS_SKINS)
-                    {
-                        if (TextureMod.Instance.showcaseStudio.showUI == false)
-                        {
-                            TextureMod.Instance.showcaseStudio.skinName = labelTxt;
-                            TextureMod.Instance.showcaseStudio.refreshTimer = reloadCustomSkinTimer;
-                            TextureMod.Instance.showcaseStudio.refreshMode = intervalMode;
-                        }
-                        else
-                        {
-                            if (intervalMode) GUI.Box(new Rect((Screen.width - (Screen.width / 3.55f)) - (GUI.skin.box.CalcSize(content).x / 2), Screen.height - (Screen.height / 23), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt + " (Refresh " + "[" + reloadCustomSkinTimer + "]" + ")");
-                            else GUI.Box(new Rect((Screen.width - (Screen.width / 3.55f)) - (GUI.skin.box.CalcSize(content).x / 2), Screen.height - (Screen.height / 23), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                        }
-                    }
-                }
-            }  //Show skin nametags
-        }
 
 
-        private bool OnSkinChangeButtonDown()
-        {
-            if (Input.GetKeyDown(nextSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_RIGHT))
-            {
-                localSkinIndex++;
-                return true;
-            }
-            else if (Input.GetKeyDown(previousSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_LEFT))
-            {
-                localSkinIndex--;
-                return true;
-            }
-            else return false;
-        }
-
-
-
-        void DisableCharacterButtons()
-        {
-            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
-            if (randomizedChar && screenOne != null) // If you have randomized your character, activate buttons again
-            {
-                if (screenOne.screenType == ScreenType.PLAYERS_STAGE || screenOne.screenType == ScreenType.PLAYERS_STAGE_RANKED)
-                {
-                    LLButton[] buttons = FindObjectsOfType<LLButton>();
-                    foreach (LLButton b in buttons) b.SetActive(true);
-                }
-            }
-        }
-        /*
-        void CheckMirror()
-        {
-            if (InLobby(GameType.Any) && doMirrorCheck)
-            {
-                if (SingleOpponent != null)
-                {
-                    OpponentTexModPlayer opponent = opponents[0];
-                    if (localPlayer.customSkin.SkinHash == SingleOpponent.customSkin.SkinHash)
-                    {
-                        SingleOpponent.SetColorFilter(SkinColorFilter.GRAY);
-                    }
-                } //Check if your skin matches your opponents, and if it does set theirs to grayscale
-                else if (opponents.Count > 1)
-                {
-                    foreach (TexModPlayer player in opponents.Where((player) => player.customSkin != null))
-                    {
-                        throw new NotImplementedException("Coming later");
-                    }
-                }
-                doMirrorCheck = false;
-            }
-        }*/
-
-
-        private void ForAllTexModPlayersInMatch(Action<TexModPlayer> action)
-        {
-            foreach (TexModPlayer tmPlayer in tmPlayers)
-            {
-                if (tmPlayer.Player.IsInMatch) action(tmPlayer);
-            }
-        }
 
         void InLobbyOrGameChecks()
-        {
+        {/*
             if (InLobby(GameType.Any) || InGame(GameType.Any) || InPostGame())
             {
                 switch (currentGameMode)
@@ -324,21 +149,6 @@ namespace TextureMod
                     case GameMode.FREE_FOR_ALL:
                     case GameMode.COMPETITIVE:
                         #region In ranked and online lobby
-                        /*
-                        if (Input.GetKeyDown(cancelKey.Value))
-                        {
-                            cancelOpponentSkin = !cancelOpponentSkin;
-                            if (opponentLobbyCharacterModel != null)
-                            {
-                                opponentCustomTexture = null;
-                                opponentCustomSkinCharacter = opponentPlayer.CharacterSelected;
-                                opponentCustomSkinCharacterVariant = opponentPlayer.CharacterVariant;
-                                if (currentGameMode == GameMode._1v1 && opponentPlayer.CJFLMDNNMIE == 1) opponentLobbyCharacterModel.SetCharacterLobby(opponentPlayer.CJFLMDNNMIE, opponentCustomSkinCharacter, CharacterVariant.CORPSE, true);
-                                else opponentLobbyCharacterModel.SetCharacterLobby(opponentPlayer.CJFLMDNNMIE, opponentCustomSkinCharacter, CharacterVariant.CORPSE, false);
-                                initOpponentPlayer = true;
-                            }
-                        }
-                        */
                         if (InLobby(GameType.Any))
                         {
                             if (localPlayer == null)
@@ -352,295 +162,30 @@ namespace TextureMod
                                 {
                                     if (player != null && player.nr != NetworkApi.LocalPlayerNumber)
                                     {
-                                        tmPlayers[player.nr] = new OpponentTexModPlayer(player);
+                                        tmPlayers[player.nr] = new RemoteTexModPlayer(player);
                                     }
                                 }
                             }
 
-                            if (InLobby(GameType.Online) && localPlayer?.Player.DidJoinedMatch != null)
-                            {
-                                /*
-                                if (opponentPlayer == null)
-                                {
-                                    opponentPlayer = GetOpponentPlayerInLobby();
-                                }
-                                else
-                                {
-                                    doSkinGet = true;
-                                    if (opponentLobbyCharacterModel == null)
-                                    {
-                                        opponentLobbyCharacterModel = GetCurrentCharacterModel(opponentPlayer.CJFLMDNNMIE);
-                                    }
-                                    else
-                                    {
-                                        opponentLobbyCharacterModel.SetSilhouette(false);
-                                        if (opponentCustomTexture != null)
-                                        {
-                                            AssignTextureToCharacterModelRenderers(opponentLobbyCharacterModel, opponentCustomTexture);
-                                        }
-                                    }
-                                }
-                                */
-                            }
-
                         }
-                        else if (InGame(GameType.Any))
-                        {
-                            /*
-                            if (InGame(GameType.Online))
-                            {
-                                if (opponentCustomTexture != null)
-                                {
-                                    if (opponentPlayerEntity == null) { opponentPlayerEntity = GetOpponentPlayerInGame(); }
-                                    else
-                                    {
-                                        AssignTextureToIngameCharacter(opponentPlayerEntity, opponentCustomTexture);
-                                        opponentPlayerNr = AssignTextureToHud(opponentPlayerEntity, opponentCustomTexture);
-                                    }
-                                }
-                            }
-                            */
-                        }
-                        /*
-                        else if (InPostGame())
-                        {
-                        }
-                        else
-                        {
-                            if (localLobbyPlayer?.NGLDMOLLPLK == false)
-                            {
-                                initLocalPlayer = true;
-                            }
-
-                            initOpponentPlayer = true;
-                        }*/
                         break;
                 }
                 #endregion
             }
+            */
         }
 
+        
         public static bool InPostGame()
         {
             return (StateApi.CurrentGameMode == GameMode._1v1 || StateApi.CurrentGameMode == GameMode.FREE_FOR_ALL || StateApi.CurrentGameMode == GameMode.COMPETITIVE)
                 && LLBML.States.GameStates.GetCurrent() == LLBML.States.GameState.GAME_RESULT;
         }
 
-        private bool HandleSwitchSkinInputs()
-        {
-            LLButton[] buttons = FindObjectsOfType<LLButton>();
-
-            if (useOnlySetKey.Value == false)
-            {
-                if (Input.GetKey(holdKey1.Value) && buttons.Length > 0)
-                {
-                    if (OnSkinChangeButtonDown())
-                    {
-                        return true;
-                    }
-
-                    foreach (LLButton b in buttons)
-                    {
-                        b.SetActive(false); //Deactivate buttons
-                    }
-                }
-                else if (Input.GetKeyUp(holdKey1.Value) && buttons.Length > 0)
-                {
-                    foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
-                }
-            }
-            else if (OnSkinChangeButtonDown())
-            {
-                return true;
-            }
-            return false;
-        }
-
-
-
-        void UpdateInMenu()
-        {
-            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
-            if (InMenu())
-            {
-
-                if (screenOne?.screenType != ScreenType.UNLOCKS_SKINS && tmPlayers.Count > 0)
-                {
-                    tmPlayers.Clear();
-                }
-
-                if (initOpponentPlayer == true)
-                {
-                    InitOpponentPlayer();
-                }
-            }
-
-            if (screenOne != null)
-            {
-                if (screenOne?.screenType == ScreenType.UNLOCKS_SKINS)
-                {
-                    var screenUnlocksSkins = screenOne as ScreenUnlocksSkins;
-
-                    CharacterModel characterModel = screenUnlocksSkins.previewModel;
-                    if (silouetteTimer > 0)
-                    {
-                        if (localPlayer.customSkin != null)
-                        {
-                            characterModel.SetSilhouette(false);
-                            AssignTextureToCharacterModelRenderers(characterModel, localPlayer.customSkin.Texture);
-                        }
-                    }
-
-                    if (Input.GetKey(holdKey1.Value))
-                    {
-                        if (OnSkinChangeButtonDown())
-                        {
-                            SetSkinForUnlocksModel(screenUnlocksSkins);
-                        }
-                    }
-
-                    if (localCustomSkin != null) // Reload a skin from its file
-                    {
-                        if (Input.GetKeyDown(reloadCustomSkin.Value))
-                        {
-                            if (!intervalMode)
-                            {
-                                if (reloadCustomSkinOnInterval.Value)
-                                {
-                                    intervalMode = true;
-                                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
-                                }
-                            }
-                            else intervalMode = false;
-
-                            try
-                            {
-                                localCustomSkin.ReloadSkin();
-                                //localTex = TextureHelper.ReloadSkin(screenUnlocksSkins.character, localTex);
-                                SetUnlocksCharacterModel(localCustomSkin.Texture);
-                                LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_CONFIRM);
-                            }
-                            catch { LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_BACK); }
-                        }
-
-                        if (intervalMode)
-                        {
-                            if (reloadCustomSkinTimer == 0)
-                            {
-                                try
-                                {
-                                    localCustomSkin.ReloadSkin();
-                                    //localTex = TextureHelper.ReloadSkin(screenUnlocksSkins.character, localTex);
-                                    SetUnlocksCharacterModel(localCustomSkin.Texture);
-                                }
-                                catch { LLHandlers.AudioHandler.PlaySfx(LLHandlers.Sfx.MENU_BACK); }
-                                reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
-                            }
-                        }
-                    }
-                }
-                else if (screenOne?.screenType == ScreenType.UNLOCKS_CHARACTERS)
-                {
-                    localCustomSkin = null;
-                    intervalMode = false;
-                    reloadCustomSkinTimer = skinReloadIntervalInFrames.Value;
-                }
-            }
-
-        }
-
-        /// End of Update()
-
-        public List<Character> GetCharactersInGame()
-        {
-            List<Character> chars = new List<Character>();
-            PlayerEntity[] playerEntities = FindObjectsOfType<PlayerEntity>();
-            foreach (PlayerEntity pe in playerEntities)
-            {
-                if (!chars.Contains(pe.character)) chars.Add(pe.character);
-            }
-            return chars;
-        }
-
-        public bool InMenu()
-        {
-            if (ScreenApi.CurrentScreens[0]?.screenType == ScreenType.MENU)
-            {
-                return true;
-            }
-            else return false;
-        }
-
-        public bool InLobby(GameType gt)
-        {
-            switch (gt)
-            {
-                case GameType.Online:
-                    return gameState == (JOFJHDJHJGI)GameState.LOBBY_ONLINE && UIScreen.loadingScreenActive == false;
-                case GameType.Offline:
-                    return (gameState == (JOFJHDJHJGI)GameState.LOBBY_TRAINING || gameState == (JOFJHDJHJGI)GameState.LOBBY_TUTORIAL || gameState == (JOFJHDJHJGI)GameState.LOBBY_LOCAL || gameState == (JOFJHDJHJGI)GameState.LOBBY_CHALLENGE || gameState == (JOFJHDJHJGI)GameState.LOBBY_STORY) && UIScreen.loadingScreenActive == false;
-                case GameType.Any:
-                    return (gameState == (JOFJHDJHJGI)GameState.LOBBY_ONLINE || gameState == (JOFJHDJHJGI)GameState.LOBBY_TRAINING || gameState == (JOFJHDJHJGI)GameState.LOBBY_TUTORIAL || gameState == (JOFJHDJHJGI)GameState.LOBBY_LOCAL || gameState == (JOFJHDJHJGI)GameState.LOBBY_CHALLENGE || gameState == (JOFJHDJHJGI)GameState.LOBBY_STORY) && UIScreen.loadingScreenActive == false;
-            }
-            return false;
-        }
-
-        public bool InGame(GameType gt)
-        {
-            switch (gt)
-            {
-                case GameType.Online:
-                    return InMatch && IsOnline == true;
-                case GameType.Offline:
-                    return InMatch && IsOnline == false;
-                case GameType.Any:
-                    return InMatch;
-                default:
-                    return false;
-            }
-        }
-
-        private ALDOKEMAOMB GetLocalPlayerInLobby(GameType gt)
-        {
-            ALDOKEMAOMB player = null;
-            switch (gt)
-            {
-                case GameType.Online:
-                    if (P2P.localPeer != null)
-                    {
-                        int nr = P2P.localPeer.playerNr;
-                        Debug.Log($"Assigned player nr [{nr}] as the local player");
-                        return ALDOKEMAOMB.BJDPHEHJJJK(nr);
-                    }
-                    break;
-                case GameType.Offline:
-                    return ALDOKEMAOMB.BJDPHEHJJJK(0);
-            }
-            return player;
-        }
-
-        private Player GetOpponentPlayerInLobby()
-        {
-            Player player = null;
-            if (localPlayer.Player != null)
-            {
-                if (localPlayer.Player.nr == 0)
-                {
-                    player = Player.GetPlayer(1);
-                }
-                else if (localPlayer.Player.nr == 1)
-                {
-                    player = Player.GetPlayer(0);
-                }
-            }
-
-            if (player.CharacterSelected != Character.NONE && player.CharacterSelected != Character.RANDOM) return player;
-            else return null;
-        }
 
         CustomSkin GetCustomSkin(Character character, bool isRandom = false)
         {
-            List<CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
+            List<CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
             if (customSkins.Count == 0)
             {
                 Debug.Log($"[LLBMM] TextureMod: No skins for {character}");
@@ -658,7 +203,7 @@ namespace TextureMod
             }
 
             localSkinIndex = skinIndex;
-            return customSkins[localSkinIndex];
+            return customSkins[localSkinIndex].CustomSkin;
         }
 
         //TODO colision prevention
@@ -822,33 +367,34 @@ namespace TextureMod
             Character character = tv_previewModel.Field<Character>("character").Value;
             CharacterVariant characterVariant = tv_previewModel.Field<CharacterVariant>("characterVariant").Value;
 
-            List <CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
+            List <CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
             if (customSkins.Count == 0)
             {
-                Debug.Log($"[LLBMM] TextureMod: No skins for {character}");
+                Logger.LogInfo($"No skins for {character}");
                 return;
             }
 
-            localPlayer.customSkin = GetCustomSkin(character);
-            screen.previewModel.SetCharacterResultScreen(0, character, GetCustomSkinVariant(localPlayer.customSkin.ModelVariant, characterVariant));
-            silouetteTimer = 5;
+            //localPlayer.customSkin = GetCustomSkin(character);
+            /*screen.previewModel.SetCharacterResultScreen(0, character, GetCustomSkinVariant(localPlayer.customSkin.ModelVariant, characterVariant));
+            silouetteTimer = 5;*/
         }
 
         private void SetSkinForUnlocksModel(ScreenUnlocksSkins screenUnlocksSkins, sbyte next = 0)
         {
 
             Character susCharacter = Traverse.Create(screenUnlocksSkins).Field<Character>("character").Value;
-            List<CustomSkin> customSkins = TextureMod.Instance.tl.newCharacterTextures[susCharacter];
+            List<CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[susCharacter];
             if (customSkins.Count == 0)
             {
-                Debug.Log($"[LLBMM] TextureMod: No skins for {susCharacter}");
+                Logger.LogInfo($"No skins for {susCharacter}");
                 return;
             }
 
-            localPlayer.customSkin = GetCustomSkin(susCharacter);
-            screenUnlocksSkins.ShowCharacter(susCharacter, localPlayer.customSkin.CharacterVariant, true);
-            silouetteTimer = 5;
+            //localPlayer.customSkin = GetCustomSkin(susCharacter);
+            //screenUnlocksSkins.ShowCharacter(susCharacter, localPlayer.customSkin.CharacterVariant, true);
+            /*silouetteTimer = 5;
             SetCharacterModelTex(screenUnlocksSkins.previewModel, localPlayer.customSkin?.Texture);
+            */
         }
 
 #if showOLD
@@ -972,141 +518,6 @@ namespace TextureMod
 
 
 
-        void DebugOptions()
-        {
-            #region Set Debug Vars
-            if (showDebugInfo.Value)
-            {
-                ModDebugging md = TextureMod.Instance.md;
-                try { md.AddToWindow("General", "Gamestate", gameState.ToString()); } catch { }
-                try { md.AddToWindow("General", "GameMode", currentGameMode.ToString()); } catch { }
-                try { md.AddToWindow("General", "In Menu", InMenu().ToString()); } catch { }
-                try { md.AddToWindow("General", "In Lobby", InLobby(GameType.Any).ToString()); } catch { }
-                try { md.AddToWindow("General", "In Game", InGame(GameType.Any).ToString()); } catch { }
-                try { md.AddToWindow("General", "In Post Game", InPostGame().ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[0]", ScreenApi.CurrentScreens[0]?.screenType.ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[1]", ScreenApi.CurrentScreens[1]?.screenType.ToString()); } catch { }
-                try { md.AddToWindow("General", "CurrentScreen[2]", ScreenApi.CurrentScreens[2]?.screenType.ToString()); } catch { }
-
-                try { md.AddToWindow("Skin Exchange", "Do Skin Post", doSkinPost.ToString()); } catch { }
-                try { md.AddToWindow("Skin Exchange", "Post Timer", postTimer.ToString()); } catch { }
-                /*
-                try { md.AddToWindow("Skin Exchange", "Do Skin Get", doSkinGet.ToString()); } catch { }
-                try { md.AddToWindow("Skin Exchange", "Get Timer", getTimer.ToString()); } catch { }
-                try { md.AddToWindow("Skin Exchange", "New Skin To Apply", newSkinToApply.ToString()); } catch { }
-                try { md.AddToWindow("Skin Exchange", "Set Anti Mirror", setAntiMirrior.ToString()); } catch { }
-                */               
-
-                try { md.AddToWindow("Local Player", "Lobby Player", localPlayer != null ? localPlayer.Player.ToString() : "null"); } catch { }
-                try { md.AddToWindow("Local Player", "Lobby Skin Index", localSkinIndex.ToString()); } catch { }
-                try { md.AddToWindow("Local Player", "Lobby Player Model", localPlayer.characterModel != null ? localPlayer.characterModel.ToString() : "null"); } catch { }
-                try { md.AddToWindow("Local Player", "Game PlayerEntity", localPlayer.PlayerEntity != null ? localPlayer.PlayerEntity.ToString() : "null"); } catch { }
-                try { md.AddToWindow("Local Player", "Name", localPlayer.Player.nr.ToString()); } catch { }
-                try { md.AddToWindow("Local Player", "Character", localPlayer.Player.Character.ToString()); } catch { }
-                try { md.AddToWindow("Local Player", "Variant", localPlayer.Player.CharacterVariant.ToString()); } catch { }
-                try { md.AddToWindow("Local Player", "Custom Texture", localPlayer.customSkin != null ? localPlayer.customSkin.ToString() : "null"); } catch { }
-                try { md.AddToWindow("Local Player", "Initiate Player", (localPlayer != null).ToString()); } catch { }
-                try { md.AddToWindow("Local Player", "Randomized Character", randomizedChar.ToString()); } catch { }
-                try
-                {
-                    string rendererNames = "";
-                    foreach (Renderer r in localPlayer.Player.playerEntity.gameObject.GetComponentsInChildren<Renderer>())
-                    {
-                        rendererNames = rendererNames + r.name + ", ";
-                    }
-                    md.AddToWindow("Local Player", "Character renderers ingame", rendererNames);
-                }
-                catch { }
-
-                try
-                {
-                    string rendererNames = "";
-                    foreach (Renderer r in localPlayer.Player.playerEntity.skinRenderers)
-                    {
-                        rendererNames = rendererNames + r.name + ", ";
-                    }
-                    md.AddToWindow("Local Player", "VisualEntity renderers ingame", rendererNames);
-                }
-                catch { }
-
-                try
-                {
-                    string rendererNames = "";
-                    foreach (Renderer r in localPlayer.Player.playerEntity.skinRenderers)
-                    {
-                        if (r.name == "meshNurse_MainRenderer")
-                        {
-                            foreach (Material m in r.materials)
-                            {
-                                rendererNames = rendererNames + m.name + ", ";
-                            }
-                        }
-                    }
-                    md.AddToWindow("Local Player", "Material names in meshNurse_MainRenderer", rendererNames);
-                }
-                catch { }
-                /*
-                try { md.AddToWindow("Remote Player", "Lobby Player", opponentPlayer.ToString()); } catch { md.AddToWindow("Remote Player", "Lobby Player", "null"); }
-                try { md.AddToWindow("Remote Player", "Lobby Player Model", opponentLobbyCharacterModel.ToString()); } catch { md.AddToWindow("Remote Player", "Lobby Player Model", "null"); }
-                try { md.AddToWindow("Remote Player", "Game PlayerEntity", opponentPlayerEntity.ToString()); } catch { md.AddToWindow("Remote Player", "Game PlayerEntity", "null"); }
-                try { md.AddToWindow("Remote Player", "Name", opponentPlayerNr.ToString()); } catch { }
-                try { md.AddToWindow("Remote Player", "Customskin Character", opponentCustomSkinCharacter.ToString()); } catch { }
-                try { md.AddToWindow("Remote Player", "Customskin Variant", opponentCustomSkinCharacterVariant.ToString()); } catch { }
-                try { md.AddToWindow("Remote Player", "Custom Texture", opponentCustomTexture.ToString()); } catch { md.AddToWindow("Remote Player", "Custom Texture", "null"); }
-                try { md.AddToWindow("Remote Player", "Initiate Player", initOpponentPlayer.ToString()); } catch { }
-                try { md.AddToWindow("Remote Player", "Cancel Skin", cancelOpponentSkin.ToString()); } catch { }
-                */
-                try
-                {
-                    string rendererNames = "";
-                    foreach (Renderer r in mainBall.gameObject.GetComponentInChildren<VisualEntity>().skinRenderers)
-                    {
-                        rendererNames = rendererNames + r.name + ", ";
-                    }
-                    md.AddToWindow("Ball", "Name of renderers", rendererNames);
-                }
-                catch { }
-
-                try
-                {
-                    VisualEntity[] ves = FindObjectsOfType<VisualEntity>();
-                    string rendererNames = "";
-                    foreach (VisualEntity ve in ves)
-                    {
-                        rendererNames = rendererNames + ve.name + ", ";
-                    }
-                    md.AddToWindow("Effects", "VisualEntities", rendererNames);
-                }
-                catch { }
-
-
-                try
-                {
-                    GameObject[] gos = FindObjectsOfType<GameObject>();
-                    string ents = "";
-                    foreach (GameObject go in gos)
-                    {
-                        ents = ents + go.name + ", ";
-                    }
-                    md.AddToWindow("GameObjects", "Active GameObjects", ents);
-                }
-                catch { }
-
-            }
-
-
-            #endregion
-        }
-
-
-    }
-
-
-    public enum GameType
-    {
-        Online = 0,
-        Offline = 1,
-        Any = 2
     }
 }
 

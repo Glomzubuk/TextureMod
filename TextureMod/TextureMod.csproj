@@ -28,6 +28,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -52,10 +54,6 @@
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>Libs\BepInEx.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>Libs\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="LLBModdingLib">
@@ -106,10 +104,6 @@
       <HintPath>Libs\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ModMenu">
-      <HintPath>Libs\ModMenu.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomSkin.cs" />
@@ -119,7 +113,6 @@
     <Compile Include="ShowcaseStudio.cs" />
     <Compile Include="SmoothMouseLook.cs" />
     <Compile Include="TextureChanger.cs" />
-    <Compile Include="TextureHelper.cs" />
     <Compile Include="TextureLoader.cs" />
     <Compile Include="TextureMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -128,10 +121,13 @@
     <Compile Include="SkinCache.cs" />
     <Compile Include="TMPlayer\TexModPlayer.cs" />
     <Compile Include="TMPlayer\LocalTexModPlayer.cs" />
-    <Compile Include="TMPlayer\OpponentTexModPlayer.cs" />
+    <Compile Include="TMPlayer\RemoteTexModPlayer.cs" />
     <Compile Include="Effects\EffectsHandler.cs" />
     <Compile Include="Effects\EffectChanger.cs" />
     <Compile Include="RendererHelper.cs" />
+    <Compile Include="TMPlayer\TexModPlayerManager.cs" />
+    <Compile Include="CustomSkinCache.cs" />
+    <Compile Include="CustomSkinHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

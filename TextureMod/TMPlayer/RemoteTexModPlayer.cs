@@ -3,9 +3,9 @@ using LLBML.Players;
 
 namespace TextureMod.TMPlayer
 {
-    public class OpponentTexModPlayer : TexModPlayer
+    public class RemoteTexModPlayer : TexModPlayer
     {
-        public OpponentTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) : base(player, skin, model)
+        public RemoteTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) : base(player, skin, model)
         {
         }
 
@@ -19,7 +19,7 @@ namespace TextureMod.TMPlayer
                 //TODO AccessRef theses, it's reflection  every frame otherwise
                 Character modelCharacter = tv_characterModel.Field<Character>("character").Value;
                 CharacterVariant modelCharacterVariant = tv_characterModel.Field<CharacterVariant>("characterVariant").Value;
-
+                /*
                 if (
                     (modelCharacter != customSkin.Character || modelCharacterVariant != customSkin.CharacterVariant) &&
                     (Player.CharacterSelected != Character.NONE || Player.CharacterVariant != CharacterVariant.CORPSE))
@@ -59,7 +59,7 @@ namespace TextureMod.TMPlayer
                         CheckMirrors();
                         ShouldRefreshSkin = false;
                     }
-                }
+                }*/
             }
         }
     }

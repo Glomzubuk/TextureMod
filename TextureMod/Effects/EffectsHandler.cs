@@ -8,6 +8,8 @@ using BepInEx;
 using HarmonyLib;
 using LLBML;
 using LLBML.Math;
+using LLBML.Texture;
+using LLBML.States;
 using TextureMod.TMPlayer;
 
 namespace TextureMod
@@ -37,24 +39,24 @@ namespace TextureMod
 
         private static void LoadEffects()
         {
-            candySplashWhite = TextureHelper.LoadPNG(Path.Combine(EffectsFolder, "candySplashWhite.png"));
+            candySplashWhite = TextureUtils.LoadPNG(Path.Combine(EffectsFolder, "candySplashWhite.png"));
 
-            gridStartBG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridStartBG.png"));
-            gridStartFG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridStartFG.png"));
-            gridTrail = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridTrail.png"));
-            gridArrive = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridArrive.png"));
+            gridStartBG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridStartBG.png"));
+            gridStartFG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridStartFG.png"));
+            gridTrail = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridTrail.png"));
+            gridArrive = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "GridSpecial", "gridArrive.png"));
 
-            bubbleBG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubbleBG.png"));
-            bubbleFG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubbleFG.png"));
-            bubblePopBG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubblePopBG.png"));
-            bubblePopFG = TextureHelper.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubblePopFG.png"));
+            bubbleBG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubbleBG.png"));
+            bubbleFG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubbleFG.png"));
+            bubblePopBG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubblePopBG.png"));
+            bubblePopFG = TextureUtils.LoadPNG(Utility.CombinePaths(EffectsFolder, "JetSpecial", "bubblePopFG.png"));
         }
 
         #region Texture Manipulation [Color Replacers and effect colors, etc]
 
         public static Texture2D GetGrayscaledCopy(Texture2D texture)
         {
-            Texture2D gray = TextureHelper.NewDefaultTexture(texture.width, texture.height);
+            Texture2D gray = TextureUtils.DefaultTexture(texture.width, texture.height);
             Color[] texColors = gray.GetPixels();
             for (var i = 0; i < texColors.Length; i++)
             {
@@ -68,7 +70,7 @@ namespace TextureMod
 
         public static Texture2D GetColoredCopy(Texture2D texture, Color color)
         {
-            Texture2D gray = TextureHelper.NewDefaultTexture(texture.width, texture.height);
+            Texture2D gray = TextureUtils.DefaultTexture(texture.width, texture.height);
             Color[] texColors = gray.GetPixels();
             for (var i = 0; i < texColors.Length; i++)
             {
@@ -83,7 +85,7 @@ namespace TextureMod
         #region Ball Effects
         public static void SetBallColors()
         {
-            if (StateApi.InGame)
+            if (GameStates.IsInMatch())
             {
                 SetBallColors(BallHandler.instance.GetBall(0));
             }

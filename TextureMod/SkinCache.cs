@@ -12,7 +12,7 @@ namespace TextureMod
         public Dictionary<Hash128, CustomSkin> Cache { get; protected set; }
         public string rootPath;
 
-        public SkinCache(string rootPath)
+        public SkinCache(string rootPath = null)
         {
             this.rootPath = rootPath;
             this.Cache = new Dictionary<Hash128, CustomSkin>();

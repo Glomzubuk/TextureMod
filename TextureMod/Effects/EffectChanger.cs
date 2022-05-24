@@ -4,6 +4,7 @@ using UnityEngine;
 using GameplayEntities;
 using BepInEx;
 using BepInEx.Configuration;
+using LLBML.Texture;
 
 
 namespace TextureMod
@@ -48,21 +49,21 @@ namespace TextureMod
         private void Start()
         {
             string parryFolder = Path.Combine(effectsFolder, "Parry");
-            parryActiveBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveBG.png"));
-            parryActiveMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveMG.png"));
-            parryActiveFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryActiveFG.png"));
+            parryActiveBG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveBG.png"));
+            parryActiveMG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveMG.png"));
+            parryActiveFG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveFG.png"));
 
-            parryEndBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndBG.png"));
-            parryEndMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndMG.png"));
-            parryEndFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parryEndFG.png"));
+            parryEndBG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryEndBG.png"));
+            parryEndMG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryEndMG.png"));
+            parryEndFG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryEndFG.png"));
 
-            parrySuccessBG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessBG.png"));
-            parrySuccessMG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessMG.png"));
-            parrySuccessFG = TextureHelper.LoadPNG(Path.Combine(parryFolder, "parrySuccessFG.png"));
+            parrySuccessBG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parrySuccessBG.png"));
+            parrySuccessMG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parrySuccessMG.png"));
+            parrySuccessFG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parrySuccessFG.png"));
 
             string clashFolder = Path.Combine(effectsFolder, "Clash");
-            clashBG = TextureHelper.LoadPNG(Path.Combine(clashFolder, "clashEffectBG.png"));
-            clashFG = TextureHelper.LoadPNG(Path.Combine(clashFolder, "clashEffectFG.png"));
+            clashBG = TextureUtils.LoadPNG(Path.Combine(clashFolder, "clashEffectBG.png"));
+            clashFG = TextureUtils.LoadPNG(Path.Combine(clashFolder, "clashEffectFG.png"));
 
 
             ConfigFile config = TextureMod.Instance.Config;

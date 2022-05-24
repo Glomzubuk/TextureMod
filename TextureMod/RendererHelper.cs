@@ -2,6 +2,7 @@
 using UnityEngine;
 using GameplayEntities;
 using LLBML.Players;
+using LLBML.Utils;
 using HarmonyLib;
 
 namespace TextureMod
@@ -37,7 +38,7 @@ namespace TextureMod
 
         public static void AssignTextureToIngameCharacter(PlayerEntity playerEntity, Texture2D texture)
         {
-            VisualEntity ve = playerEntity.gameObject.GetComponent<VisualEntity>();
+            VisualEntity ve = playerEntity?.gameObject?.GetComponent<VisualEntity>();
             if (ve != null)
             {
                 if (ve.skinRenderers.Count > 0)
@@ -52,6 +53,11 @@ namespace TextureMod
                         EffectsHandler.AssignToxicEffectColors(playerEntity.player.CJFLMDNNMIE, texture, playerEntity.variant);
                     }
                 }
+            }
+            else
+            {
+                TextureMod.Log.LogError($"Null ref test: pe {playerEntity == null}, tex {texture == null}, ve {ve == null}");
+                DebugUtils.PrintStacktrace();
             }
         }
 
@@ -73,10 +79,21 @@ namespace TextureMod
 
         public static void AssignTextureToCharacterModelRenderers(CharacterModel model, PlayerEntity playerEntity, Texture2D texture)
         {
+            
             Renderer[] rs = model.curModel?.transform.GetComponentsInChildren<Renderer>() ?? new Renderer[0];
             for (int i = 0; i < rs.Length; i++)
             {
                 RendererHelper.AssignTextureToRenderer(rs[i], texture, playerEntity);
+            }
+        }
+
+        public static void AssignTextureToCharacterModelRenderers(CharacterModel model, Character character, CharacterVariant variant, Texture2D texture)
+        {
+
+            Renderer[] rs = model.curModel?.transform.GetComponentsInChildren<Renderer>() ?? new Renderer[0];
+            for (int i = 0; i < rs.Length; i++)
+            {
+                RendererHelper.AssignTextureToRenderer(rs[i], texture, character, variant);
             }
         }
 

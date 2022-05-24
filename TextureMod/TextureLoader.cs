@@ -5,21 +5,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using BepInEx.Logging;
 
 
 namespace TextureMod
 {
     public class TextureLoader : MonoBehaviour
     {
+        public static TextureLoader Instance { get; private set; }
+        private static readonly ManualLogSource Logger = TextureMod.Log;
         private static readonly string charactersFolder = BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters");
         public List<string> chars;
         //public Dictionary<Character, Dictionary<string, Texture2D>> characterTextures = new Dictionary<Character, Dictionary<string, Texture2D>>();
-        public Dictionary<Character, List<CustomSkin>> newCharacterTextures = new Dictionary<Character, List<CustomSkin>>();
-        Regex regex = new Regex(@"((_ALT\d?$)|(^\d+#))");
+        public CustomSkinCache newCharacterTextures = new CustomSkinCache();
+        Regex altRegex = new Regex(@"((_ALT\d?$)|(^\d+#))");
+
 
         public bool loadingExternalFiles = true;
         public bool hasCactuar = false;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
         private void Start()
         {
             LoadLibrary();
@@ -32,7 +40,7 @@ namespace TextureMod
 
         public void ReloadChacterSpecificSkins(Character character)
         {
-            List<CustomSkin> characterSkins = newCharacterTextures[character];
+            List<CustomSkinHandler> characterSkins = newCharacterTextures[character];
             for (int i = 0; i < characterSkins.Count - 1; i++)
             {
                 characterSkins[i].ReloadSkin();
@@ -51,7 +59,6 @@ namespace TextureMod
 
                 foreach (string characterFolder in chars)
                 {
-                    List<CustomSkin> customSkins = new List<CustomSkin>();
                     Character character = StringToChar(Path.GetFileName(characterFolder));
                     bool hasDLC = CheckHasDLCForCharacter(character);
 
@@ -63,14 +70,14 @@ namespace TextureMod
                             continue;
                         }
                         string cleanName = Path.GetFileNameWithoutExtension(file);
-                        cleanName = regex.Replace(cleanName, m => { return ""; });
-                        customSkins.Add(new CustomSkin(character, modelVariant, cleanName, null, file));
+                        cleanName = altRegex.Replace(cleanName, m => { return ""; });
+                        newCharacterTextures.Add(character, new CustomSkinHandler(character, modelVariant, cleanName, null, file));
                     }
 
                     foreach (string authorDir in Directory.GetDirectories(characterFolder))
                     {
                         string authorName = Path.GetFileName(authorDir);
-                        authorName = regex.Replace(authorName, m => { return ""; });
+                        authorName = altRegex.Replace(authorName, m => { return ""; });
 
                         foreach (string file in Directory.GetFiles(authorDir, "*.png", SearchOption.TopDirectoryOnly))
                         {
@@ -81,15 +88,14 @@ namespace TextureMod
                             }
 
                             string cleanName = Path.GetFileNameWithoutExtension(file);
-                            cleanName = regex.Replace(cleanName, m => { return ""; });
-                            customSkins.Add(new CustomSkin(character, modelVariant, cleanName, authorName, file));
+                            cleanName = altRegex.Replace(cleanName, m => { return ""; });
+                            CustomSkinHandler newSkin = new CustomSkinHandler(character, modelVariant, cleanName, authorName, file);
+                            newCharacterTextures.Add(character, newSkin);
                         }
                     }
-
-                    newCharacterTextures.Add(character, customSkins);
                 }
 
-                UIScreen.SetLoadingScreen(false);
+                //UIScreen.SetLoadingScreen(false);
                 loadingExternalFiles = false;
             }
             catch (Exception e)
