@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 using GameplayEntities;
@@ -40,9 +41,13 @@ namespace TextureMod.TMPlayer
                 //Player.Selected - Has the Player selected their character yet.
                 if (this.Player.selected)
                 {
-
+                    if (GameStates.IsInLobby())
+                    {
+                        HandleSwitchSkinInputs();
+                    }
+                    /*
                     if (HandleSwitchSkinInputs()) // Assign skin to local player
-                    {/*
+                    {
                         if (setAntiMirrior)
                         {
                             string opponentSkinPath = Path.Combine(imageFolder, "opponent.png");
@@ -50,8 +55,7 @@ namespace TextureMod.TMPlayer
                             setAntiMirrior = false;
                         }
                         */
-                        GameStatesLobbyUtils.RefreshLocalPlayerState();
-                        bool isRandom = false;
+                    bool isRandom = false;
                         /*
                         if (this.Player.CharacterSelectedIsRandom) // Randomize skin and char
                         {
@@ -80,8 +84,6 @@ namespace TextureMod.TMPlayer
 
                             isRandom = true;
                         }*/
-
-                        NextSkin(this.Player.CharacterSelected, this.Player.CharacterSelectedIsRandom);
                         /*
                         if (TextureChanger.InLobby(GameType.Online))
                         {
@@ -90,7 +92,7 @@ namespace TextureMod.TMPlayer
                             setAntiMirrior = false;
                             calculateMirror = true;
                         }*/
-                    }
+//                    }
                 }
 
 
@@ -172,22 +174,43 @@ namespace TextureMod.TMPlayer
             }
         }
 
+        private int skinCounter = 0;
         public void NextSkin(Character character, bool random = false)
         {
-            if (customSkin?.Character != Player.CharacterSelected && !Player.CharacterSelectedIsRandom)
-            {
-                Logger.LogDebug("NextSkin NYI");
-                SetCustomSkin(TextureLoader.Instance.newCharacterTextures[character].First().CustomSkin);
-            }
+            if (customSkin?.Character != Player.CharacterSelected) skinCounter = 0;
+            this.ChangeSkin(character, skinCounter++, random);
         }
 
         public void PreviousSkin(Character character, bool random = false)
         {
-            if (customSkin?.Character != Player.CharacterSelected && !Player.CharacterSelectedIsRandom)
+            if (customSkin?.Character != Player.CharacterSelected) skinCounter = 0;
+            this.ChangeSkin(character, --skinCounter, random);
+        }
+
+        public void ChangeSkin(Character character, int index, bool random = false)
+        {
+            if (Player.CharacterSelectedIsRandom)
             {
-                Logger.LogDebug("PreviousSkin NYI");
 
             }
+            else
+            {
+                // TODO Improve that
+                List<CustomSkin> skins = TextureMod.customSkinCache.GetUsableSkins(character);
+                if (skins == null) return;
+
+                Logger.LogDebug($"Counter: {skinCounter}, skin length: {skins.Count}");
+                this.SetCustomSkin(skins?[mod(index, skins.Count)]);
+                if (GameStates.IsInOnlineLobby())
+                {
+                    GameStatesLobbyUtils.SendPlayerState(this.Player);
+                }
+            }
+        }
+        private int mod(int x, int m)
+        {
+            int r = x % m;
+            return r < 0 ? r + m : r;
         }
 
 
@@ -206,52 +229,44 @@ namespace TextureMod.TMPlayer
             }
         }
 
-        private bool HandleSwitchSkinInputs()
+        private void HandleSwitchSkinInputs()
         {
-            if (GameStates.IsInLobby()) {
-                LLButton[] buttons = UnityEngine.Object.FindObjectsOfType<LLButton>();
+            LLButton[] buttons = UnityEngine.Object.FindObjectsOfType<LLButton>();
 
-                if (TextureMod.Instance.tc.useOnlySetKey.Value == false)
-                {
-                    if (Input.GetKey(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
-                    {
-                        if (OnSkinChangeButtonDown())
-                        {
-                            return true;
-                        }
-
-                        foreach (LLButton b in buttons)
-                        {
-                            b.SetActive(false); //Deactivate buttons
-                        }
-                    }
-                    else if (Input.GetKeyUp(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
-                    {
-                        foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
-                    }
-                }
-                else if (OnSkinChangeButtonDown())
-                {
-                    return true;
-                }
+            if (TextureMod.Instance.tc.useOnlySetKey.Value == true)
+            {
+                HandleSkinChangeButtonDown();
+                return;
             }
-            return false;
+
+            if (Input.GetKey(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+            {
+                HandleSkinChangeButtonDown();
+
+                foreach (LLButton b in buttons) b.SetActive(false); //Deactivate buttons
+            }
+            else if (Input.GetKeyUp(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+            {
+                foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
+            }
         }
 
 
-        private bool OnSkinChangeButtonDown()
+        private void HandleSkinChangeButtonDown()
         {
-            if (Input.GetKeyDown(TextureMod.Instance.tc.nextSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_RIGHT))
-            {
-                return true;
-            }
-            else if (Input.GetKeyDown(TextureMod.Instance.tc.previousSkin.Value) || Controller.all.GetButtonDown(InputAction.EXPRESS_LEFT))
-            {
-                PreviousSkin(this.CustomSkinCharacter);
-                return true;
-            }
-            else return false;
-        }
+            var test = Input.mousePosition;
+            ScreenPlayers.GetCursorX();
 
+            
+
+            if (Input.GetKeyDown(TextureMod.Instance.tc.nextSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_RIGHT))
+            {
+                NextSkin(this.Player.Character);
+            }
+            else if (Input.GetKeyDown(TextureMod.Instance.tc.previousSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_LEFT))
+            {
+                PreviousSkin(this.Player.Character);
+            }
+        }
     }
 }

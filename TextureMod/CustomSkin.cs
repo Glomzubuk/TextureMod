@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using BepInEx.Logging;
@@ -12,7 +13,7 @@ namespace TextureMod
     {
         private static ManualLogSource Logger => TextureMod.Log;
 
-        public Hash128 SkinHash { get; private set; }
+        public SkinHash SkinHash { get; private set; }
         public Character Character { get; private set; }
         public ModelVariant ModelVariant { get; private set; }
         public CharacterVariant CharacterVariant => VariantHelper.GetDefaultVariantForModel(ModelVariant);
@@ -27,6 +28,7 @@ namespace TextureMod
             Author = _author;
             Texture = texture;
             Name = Texture.name = _name;
+            this.RegenerateSkinHash();
         }
         public bool IsForVariant(CharacterVariant characterVariant)
         {
@@ -52,8 +54,8 @@ namespace TextureMod
                 {
                     binaryWriter.Write((byte)this.Character);
                     binaryWriter.Write((byte)this.ModelVariant);
-                    binaryWriter.Write(this.Author);
-                    binaryWriter.Write(this.Name);
+                    binaryWriter.Write(this.Author ?? "Unknown");
+                    binaryWriter.Write(this.Name ?? "Unknown");
                     byte[] pngImage = Texture.EncodeToPNG();
                     binaryWriter.Write(pngImage.Length);
                     binaryWriter.Write(pngImage);
@@ -91,15 +93,9 @@ namespace TextureMod
             this.RegenerateSkinHash();
         }
 
-        public static Hash128 GenerateTextureHash(Texture2D texture, Character character, ModelVariant modelVariant)
-        {
-            byte[] imageData = texture.GetRawTextureData();
-            return Hash128.Compute(imageData.ToString() + character.ToString() + modelVariant.ToString());
-        }
-
         public void RegenerateSkinHash()
         {
-            this.SkinHash = GenerateTextureHash(this.Texture, this.Character, this.ModelVariant);
+            this.SkinHash = new SkinHash(this.Texture, this.Character, this.ModelVariant);
         }
 
         public override string ToString()

@@ -11,6 +11,7 @@ using LLBML;
 using LLBML.States;
 using LLBML.Players;
 using LLBML.Messages;
+using LLBML.Networking;
 using TextureMod.TMPlayer;
 
 namespace TextureMod
@@ -37,12 +38,13 @@ namespace TextureMod
         public static byte[] OnSendPayload(PlayerLobbyState pls)
         {
             TexModPlayer tmPlayer = TexModPlayerManager.GetPlayer(pls.playerNr);
+            TextureMod.Log.LogDebug("Test: " + pls.ToString());
             if (tmPlayer.Player.isLocal)
             {
                 if (tmPlayer.HasCustomSkin())
                 {
                     List<byte> payload = new List<byte>();
-                    byte[] skinHash = Encoding.ASCII.GetBytes(tmPlayer.customSkin.SkinHash.ToString());
+                    byte[] skinHash = (byte[])tmPlayer.customSkin.SkinHash;
                     payload.Add((byte)skinHash.Length);
                     payload.AddRange(skinHash);
                     return payload.ToArray();
@@ -65,14 +67,17 @@ namespace TextureMod
 
             try
             {
-                Hash128 skinHash = Hash128.Parse(Encoding.ASCII.GetString(rawHash));
+                SkinHash skinHash = new SkinHash(rawHash);
                 TextureMod.Log.LogDebug("Test: " + skinHash.ToString());
-                if (tmPlayer.customSkin?.SkinHash != skinHash)
+                CustomSkinHandler handler = TextureMod.customSkinCache.GetHandlerFromHash(skinHash);
+                if (handler != null)
                 {
-                    if (TexModPlayerManager.skinCache.ContainsHash(skinHash))
-                    {
-                        tmPlayer.SetCustomSkin(TexModPlayerManager.skinCache[skinHash]);
-                    }
+                    tmPlayer.SetCustomSkin(handler.CustomSkin);
+                    GameStatesLobbyUtils.RefreshPlayerState(tmPlayer.Player);
+                }
+                else
+                {
+                    SendSkinRequest(tmPlayer.Player.nr, skinHash);
                 }
 
             }
@@ -117,38 +122,46 @@ namespace TextureMod
             }
         }
         */
-        public static void SendSkinRequest(int playerNrToRequest, Hash128 skinHash)
+        private static int transactionIDCounter = 0;
+        public static void SendSkinRequest(int playerNrToRequest, SkinHash skinHash)
         {
-            P2P.SendToPlayerNr(playerNrToRequest, new Message((Msg)TexModMessages.TEXMOD_SKINREQUEST, P2P.localPeer.playerNr, -1, Encoding.ASCII.GetBytes(skinHash.ToString())));
+            TextureMod.Log.LogDebug("Requesting skin with hash: " + skinHash.ToString());
+            NetworkApi.SendMessageToPlayer(playerNrToRequest, new Message((Msg)TexModMessages.TEXMOD_SKINREQUEST, P2P.localPeer.playerNr, transactionIDCounter++, skinHash.Bytes, skinHash.Bytes.Length));
         }
 
         public static void ReceiveSkinRequest(Message msg)
         {
             if (msg.playerNr == P2P.localPeer.playerNr) return;
-            Hash128 skinHash = Hash128.Parse(Encoding.ASCII.GetString((byte[])msg.ob));
-
-            if (TextureMod.skinCachesHandler.ContainsHash(skinHash))
+            SkinHash skinHash = new SkinHash((byte[])msg.ob);
+            TextureMod.Log.LogDebug("Received skin request for hash: " + skinHash.ToString());
+            CustomSkin skin = TextureMod.customSkinCache.GetSkinFromHash(skinHash);
+            if (skin != null)
             {
-                SendSkin(msg.playerNr, TextureMod.skinCachesHandler[skinHash]);
+                SendSkin(msg.playerNr, msg.index, skin);
             }
         }
 
-        public static void SendSkin(int playerNrToSendSkin, CustomSkin skin)
+        public static void SendSkin(int playerNrToSendSkin, int requestID, CustomSkin skin)
         {
+            TextureMod.Log.LogDebug($"Sending skin {skin.Name} to player {playerNrToSendSkin}");
             byte[] skinAsBytes = skin.ToBytes();
             //TODO That won' t work by default, default packet size limit is too small
-            P2P.SendToPlayerNr(playerNrToSendSkin, new Message((Msg)TexModMessages.TEXMOD_SKIN, P2P.localPeer.playerNr, skinAsBytes.Length, skinAsBytes));
+            NetworkApi.SendMessageToPlayer(playerNrToSendSkin, new Message((Msg)TexModMessages.TEXMOD_SKIN, P2P.localPeer.playerNr, requestID, skinAsBytes));
         }
 
         public static void ReceiveSkin(Message msg)
         {
             CustomSkin receivedSkin = CustomSkin.FromBytes((byte[])msg.ob);
-            if(receivedSkin != null)
+            TextureMod.Log.LogDebug($"Received skin from player {msg.playerNr}, is it null? {(receivedSkin == null? "Yes": "No")}");
+            if (receivedSkin != null)
             {
+                TextureMod.Log.LogDebug($"Successfuly received {receivedSkin.Name} from player {msg.playerNr}");
+
+                CustomSkinHandler receivedSkinHandler = new CustomSkinHandler(receivedSkin);
                 //TODO Load skin in cache
                 TextureMod.Instance.tc.debug[3] = "Got non null skin and set should refresh to true";
                 TexModPlayer player = TexModPlayerManager.Instance.tmPlayers[msg.playerNr];
-                player.SetCustomSkin(receivedSkin);
+                player.SetCustomSkin(receivedSkinHandler.CustomSkin);
             }
         }
     }

@@ -17,6 +17,14 @@ namespace TextureMod
         public bool InMemory { get; private set; } = false;
         public FileInfo FileLocation { get; private set; } = null;
 
+
+        public CustomSkinHandler(CustomSkin skin)
+        {
+            this.InMemory = true;
+            this.FileLocation = null;
+            this.CustomSkin = skin;
+        }
+
         public CustomSkinHandler(Character character, ModelVariant modelVariant, string skinName, string author, Texture2D texture)
         {
             Logger.LogDebug($"Creating skin: {character} | {modelVariant} | {skinName} | {author} | InMemory");
@@ -29,6 +37,14 @@ namespace TextureMod
         {
             Logger.LogDebug($"Creating skin: {character} | {modelVariant} | {skinName} | {author} | {filePath}");
             this.FileLocation = new FileInfo(filePath);
+            this.CustomSkin = new CustomSkin(character, modelVariant, skinName, author, TextureUtils.LoadPNG(FileLocation));
+
+        }
+
+        public CustomSkinHandler(Character character, ModelVariant modelVariant, string skinName, string author, FileInfo file)
+        {
+            Logger.LogDebug($"Creating skin: {character} | {modelVariant} | {skinName} | {author} | {file.FullName}");
+            this.FileLocation = file;
             this.CustomSkin = new CustomSkin(character, modelVariant, skinName, author, TextureUtils.LoadPNG(FileLocation));
         }
 
@@ -62,6 +78,18 @@ namespace TextureMod
                 throw new FileNotFoundException($"Skin '{this.CustomSkin.Name}' doesn't have a file registered and none was given");
             }
             File.WriteAllBytes(this.FileLocation.FullName, this.CustomSkin.Texture.EncodeToPNG());
+        }
+
+        public bool CanBeUsed()
+        {
+
+            if (CustomSkin.ModelVariant == ModelVariant.DLC && !TextureMod.ownedDLCs.Contains(CustomSkin.Character))
+            {
+                Logger.LogWarning($"You tried to use a skin for which you do not have the DLC: {CustomSkin.Character.ToString()}. Couldn't add {CustomSkin.Name} to the cache");
+                //TODO Reenable this when i find a fix for the ownedDLCs
+                //return false;
+            }
+            return true;
         }
     }
 }

@@ -38,9 +38,12 @@ namespace TextureMod
         public ShowcaseStudio showcaseStudio = null;
         #endregion
 
+        #region pathes
         public static string ResourceFolder { get; private set; }
-        public static SkinCachesHandler skinCachesHandler;
+        public static DirectoryInfo ModdingFolder { get; private set; }
+        #endregion
 
+        public static CustomSkinCache customSkinCache;
         public string retSkin = "";
 
         public static List<Character> ownedDLCs = new List<Character>();
@@ -49,14 +52,23 @@ namespace TextureMod
 
         public void Awake()
         {
+            Logger.LogInfo("Hello, World!");
             ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
-            skinCachesHandler = new SkinCachesHandler();
+            ModdingFolder = LLBML.Utils.ModdingFolder.GetModSubFolder(this.Info);
+            customSkinCache = new CustomSkinCache();
             Instance = this;
             Log = this.Logger;
         }
 
         private void Start()
         {
+            Logger.LogInfo("Loading Modding folder");
+            customSkinCache.LoadSkins(ModdingFolder.CreateSubdirectory("Characters"));
+
+            Logger.LogInfo("Loading Resources folder");
+            var resourcesCharacterFolder = new DirectoryInfo(BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters"));
+            customSkinCache.LoadSkins(resourcesCharacterFolder);
+
             //UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
             EffectsHandler.Init();
             ExchangeClient.Init();

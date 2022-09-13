@@ -47,7 +47,7 @@ namespace TextureMod.TMPlayer
         }
 
 
-        void LobbyEvents_OnLobbyReady(object source, OnLobbyReadyArgs e)
+        void LobbyEvents_OnLobbyReady(object source, LobbyReadyArgs e)
         {
             Player.ForAll((Player p) => {
                 if (p.isLocal)

@@ -185,7 +185,7 @@ namespace TextureMod
 
         CustomSkin GetCustomSkin(Character character, bool isRandom = false)
         {
-            List<CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
+            List<CustomSkinHandler> customSkins = TextureMod.customSkinCache[character];
             if (customSkins.Count == 0)
             {
                 Debug.Log($"[LLBMM] TextureMod: No skins for {character}");
@@ -367,7 +367,7 @@ namespace TextureMod
             Character character = tv_previewModel.Field<Character>("character").Value;
             CharacterVariant characterVariant = tv_previewModel.Field<CharacterVariant>("characterVariant").Value;
 
-            List <CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[character];
+            List <CustomSkinHandler> customSkins = TextureMod.customSkinCache[character];
             if (customSkins.Count == 0)
             {
                 Logger.LogInfo($"No skins for {character}");
@@ -383,7 +383,7 @@ namespace TextureMod
         {
 
             Character susCharacter = Traverse.Create(screenUnlocksSkins).Field<Character>("character").Value;
-            List<CustomSkinHandler> customSkins = TextureMod.Instance.tl.newCharacterTextures[susCharacter];
+            List<CustomSkinHandler> customSkins = TextureMod.customSkinCache[susCharacter];
             if (customSkins.Count == 0)
             {
                 Logger.LogInfo($"No skins for {susCharacter}");

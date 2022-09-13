@@ -241,6 +241,7 @@ namespace TextureMod.TMPlayer
                 SetCharacter(customSkin.Character, customSkin.CharacterVariant);
 
             }
+            GameStatesLobbyUtils.RefreshPlayerState(this.Player);
         }
 
         public void RemoveCustomSkin()
@@ -327,11 +328,11 @@ namespace TextureMod.TMPlayer
     }
     public enum SkinColorFilter
     {
-        RED = Team.Team_Enum.RED,
-        BLUE = Team.Team_Enum.BLUE,
-        YELLOW = Team.Team_Enum.YELLOW,
-        GREEN = Team.Team_Enum.GREEN,
-        NONE = Team.Team_Enum.NONE,
+        RED = Team.Enum.RED,
+        BLUE = Team.Enum.BLUE,
+        YELLOW = Team.Enum.YELLOW,
+        GREEN = Team.Enum.GREEN,
+        NONE = Team.Enum.NONE,
         GRAY,
     }
 }

@@ -16,8 +16,7 @@ namespace TextureMod
         private static readonly ManualLogSource Logger = TextureMod.Log;
         private static readonly string charactersFolder = BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters");
         public List<string> chars;
-        //public Dictionary<Character, Dictionary<string, Texture2D>> characterTextures = new Dictionary<Character, Dictionary<string, Texture2D>>();
-        public CustomSkinCache newCharacterTextures = new CustomSkinCache();
+        private CustomSkinCache newCharacterTextures = new CustomSkinCache();
         Regex altRegex = new Regex(@"((_ALT\d?$)|(^\d+#))");
 
 
@@ -30,7 +29,7 @@ namespace TextureMod
         }
         private void Start()
         {
-            LoadLibrary();
+            //LoadLibrary();
         }
 
         private List<string> GetCharacterFolders()
@@ -52,11 +51,12 @@ namespace TextureMod
             try
             {
                 chars?.Clear();
-                Resources.UnloadUnusedAssets();
                 newCharacterTextures.Clear();
 
+                Resources.UnloadUnusedAssets();
+                newCharacterTextures.LoadSkins(new DirectoryInfo(charactersFolder));
+                /*
                 chars = GetCharacterFolders();
-
                 foreach (string characterFolder in chars)
                 {
                     Character character = StringToChar(Path.GetFileName(characterFolder));
@@ -94,7 +94,7 @@ namespace TextureMod
                         }
                     }
                 }
-
+                */
                 //UIScreen.SetLoadingScreen(false);
                 loadingExternalFiles = false;
             }

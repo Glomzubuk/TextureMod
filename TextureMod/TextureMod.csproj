@@ -128,6 +128,7 @@
     <Compile Include="TMPlayer\TexModPlayerManager.cs" />
     <Compile Include="CustomSkinCache.cs" />
     <Compile Include="CustomSkinHandler.cs" />
+    <Compile Include="SkinHash.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

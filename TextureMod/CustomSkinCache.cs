@@ -1,8 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using BepInEx.Logging;
 using LLBML;
 using LLBML.Utils;
 
@@ -11,15 +13,15 @@ namespace TextureMod
     public class CustomSkinCache : GenericCache<Character, CustomSkinHandler>
     {
         public static readonly Regex altRegex = new Regex(@"((_ALT\d?$)|(^\d+#))");
+        protected static new ManualLogSource Logger => TextureMod.Log;
 
         public void LoadSkins(DirectoryInfo texLibPath)
         {
             var unload = Resources.UnloadUnusedAssets();
-            this.Clear();
 
             foreach (Character character in CharacterApi.GetPlayableCharacters())
             {
-                DirectoryInfo characterFolder = texLibPath.CreateSubdirectory(StringUtils.GetCharacterSafeName(character));
+                DirectoryInfo characterFolder = texLibPath.CreateSubdirectory(StringUtils.GetCharacterSafeName(character).ToUpper());
                 this.LoadSkins(character, characterFolder);
             }
         }
@@ -46,30 +48,82 @@ namespace TextureMod
         public void LoadSkin(Character character, FileInfo skinFile, string authorName = null)
         {
             ModelVariant modelVariant = VariantHelper.GetModelVariantFromFilePath(skinFile.Name);
-            if (modelVariant == ModelVariant.DLC && !TextureMod.ownedDLCs.Contains(character))
-            {
-                return;
-            }
 
             string cleanName = Path.GetFileNameWithoutExtension(skinFile.Name);
             cleanName = altRegex.Replace(cleanName, m => { return ""; });
-            this.Add(character, new CustomSkinHandler(character, modelVariant, cleanName, authorName, skinFile.FullName));
+            var newHandler = new CustomSkinHandler(character, modelVariant, cleanName, authorName, skinFile.FullName);
+
+            this.Add(character, newHandler);
         }
 
 
-        public override void Add(Character key, CustomSkinHandler csh)
+        public override void Add(Character key, CustomSkinHandler newSkin)
         {
-            base.Add(key, csh);
+            CustomSkinHandler handler = this.GetHandlerFromHash(newSkin.CustomSkin.SkinHash);
+            if (handler != null)
+            {
+                Logger.LogWarning($"There's already a skin with the following hash in cache: {newSkin.CustomSkin.SkinHash}. Couldn't add {newSkin.CustomSkin.Name} to the cache");
+                return;
+            }
+            base.Add(key, newSkin);       
         }
 
-        public List<CustomSkinHandler> GetSkins(Character key)
+        public List<CustomSkinHandler> GetHandlers(Character key)
         {
-            return cache[key];
+            if (this.ContainsKey(key)) return this[key];
+            else
+            {
+                Logger.LogWarning($"No skins for {key.ToString()}.");
+                return null;
+            }
         }
 
-        public CustomSkinHandler GetSkin(Character key)
+        public CustomSkinHandler GetHandler(Character key)
         {
-            return this.GetSkins(key)[0];
+            return this.GetHandlers(key)?[0];
+        }
+
+        public List<CustomSkin> GetSkins(Character key)
+        {
+            return this.GetHandlers(key)?.Select((CustomSkinHandler csh) => csh.CustomSkin).ToList();
+        }
+
+        public CustomSkin GetSkin(Character key)
+        {
+            return this.GetHandler(key)?.CustomSkin;
+        }
+
+        public List<CustomSkin> GetUsableSkins(Character key)
+        {
+            return this.GetHandlers(key)?
+                .Where((CustomSkinHandler csh) => csh.CanBeUsed() == true)
+                .Select((CustomSkinHandler csh) => csh.CustomSkin)
+                .ToList();
+        }
+        public CustomSkin GetUsableSkin(Character key)
+        {
+            return this.GetUsableSkins(key)?[0];
+        }
+
+        public CustomSkinHandler GetHandlerFromHash(SkinHash hash)
+        {
+            foreach (List<CustomSkinHandler> handlers in this.cache.Values)
+            {
+                foreach (CustomSkinHandler handler in handlers)
+                {
+                    if (handler.CustomSkin.SkinHash == hash)
+                    {
+                        return handler;
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        public CustomSkin GetSkinFromHash(SkinHash hash)
+        {
+            return this.GetHandlerFromHash(hash)?.CustomSkin;
         }
     }
 }
