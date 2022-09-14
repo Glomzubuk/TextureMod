@@ -34,28 +34,9 @@ namespace TextureMod
         public Color32[] originalDNAColors = new Color32[BagPlayer.outfitOutlineColors.Length];
 
         #endregion
-        #region Config Fields
-        public ConfigEntry<KeyCode> holdKey1;
-        public ConfigEntry<KeyCode> nextSkin;
-        public ConfigEntry<KeyCode> previousSkin;
-        public ConfigEntry<KeyCode> cancelKey;
-        public ConfigEntry<KeyCode> reloadCustomSkin;
-        public ConfigEntry<KeyCode> reloadEntireSkinLibrary;
-        public ConfigEntry<bool> useOnlySetKey;
-        public ConfigEntry<bool> neverApplyOpponentsSkin;
-        public ConfigEntry<bool> showDebugInfo;
-        public ConfigEntry<bool> lockButtonsOnRandom;
-        public ConfigEntry<bool> reloadCustomSkinOnInterval;
-        public ConfigEntry<int> skinReloadIntervalInFrames;
-        public ConfigEntry<bool> assignFirstSkinOnCharacterSelection;
-        #endregion
 
         public int localSkinIndex = -1;
 
-        private void Start()
-        {
-            InitConfig();
-        }
 
         private void OnGUI()
         {
@@ -65,67 +46,13 @@ namespace TextureMod
         private void FixedUpdate()
         {
             /*
-            if (silouetteTimer > 0) silouetteTimer--;
-            if (reloadCustomSkinTimer > 0) reloadCustomSkinTimer--;*/
-        }
-
-        private void Update()
-        {
-
-
-            InLobbyOrGameChecks();
-        }
-
-        void LateUpdate()
-        {
-            if (Input.GetKeyDown(reloadEntireSkinLibrary.Value))
-            {
-                TextureMod.Instance.tl.LoadLibrary(); //Reloads the entire texture folder
-            }
-        }
-
-
-
-
-
-        void InLobbyOrGameChecks()
-        {/*
-            if (InLobby(GameType.Any) || InGame(GameType.Any) || InPostGame())
-            {
-                switch (currentGameMode)
-                {
-                    case GameMode.TRAINING:
-                    case GameMode.TUTORIAL:
-                        #region In training and tutorial
-                        else if (InGame(GameType.Offline))
-                        {
-                            if (localPlayer.customSkin != null)
-                            {
-                                // TODO Reloading the skin library                           
-                                if (Input.GetKeyDown(reloadCustomSkin.Value))
-                                {
-                                    try { localPlayer.customSkin.ReloadSkin(); }
-                                    catch { AudioHandler.PlaySfx(Sfx.MENU_BACK); }
-                                }
-                            }
-                        }
-                        break;
-                    #endregion
-            }
-            */
-        }
-
-        
-        public static bool InPostGame()
-        {
-            return (StateApi.CurrentGameMode == GameMode._1v1 || StateApi.CurrentGameMode == GameMode.FREE_FOR_ALL || StateApi.CurrentGameMode == GameMode.COMPETITIVE)
-                && LLBML.States.GameStates.GetCurrent() == LLBML.States.GameState.GAME_RESULT;
+            if (silouetteTimer > 0) silouetteTimer--;*/
         }
 
 
         CustomSkin GetCustomSkin(Character character, bool isRandom = false)
         {
-            List<CustomSkinHandler> customSkins = TextureMod.customSkinCache[character];
+            List<CustomSkinHandler> customSkins = SkinsManager.skinCache[character];
             if (customSkins.Count == 0)
             {
                 Debug.Log($"[LLBMM] TextureMod: No skins for {character}");
@@ -192,7 +119,7 @@ namespace TextureMod
             Character character = tv_previewModel.Field<Character>("character").Value;
             CharacterVariant characterVariant = tv_previewModel.Field<CharacterVariant>("characterVariant").Value;
 
-            List <CustomSkinHandler> customSkins = TextureMod.customSkinCache[character];
+            List <CustomSkinHandler> customSkins = SkinsManager.skinCache[character];
             if (customSkins.Count == 0)
             {
                 Logger.LogInfo($"No skins for {character}");
@@ -208,7 +135,7 @@ namespace TextureMod
         {
 
             Character susCharacter = Traverse.Create(screenUnlocksSkins).Field<Character>("character").Value;
-            List<CustomSkinHandler> customSkins = TextureMod.customSkinCache[susCharacter];
+            List<CustomSkinHandler> customSkins = SkinsManager.skinCache[susCharacter];
             if (customSkins.Count == 0)
             {
                 Logger.LogInfo($"No skins for {susCharacter}");
@@ -223,35 +150,6 @@ namespace TextureMod
         }
 
 
-
-
-        private void InitConfig()
-        {
-
-            ConfigFile config = TextureMod.Instance.Config;
-
-            config.Bind("TextureChanger", "lobby_settings_header", "Lobby Settings:", "modmenu_header");
-            holdKey1 = config.Bind<KeyCode>("TextureChanger", "holdKey1", KeyCode.LeftShift);
-            nextSkin = config.Bind<KeyCode>("TextureChanger", "nextSkin", KeyCode.Mouse0);
-            previousSkin = config.Bind<KeyCode>("TextureChanger", "previousSkin", KeyCode.Mouse1);
-            cancelKey = config.Bind<KeyCode>("TextureChanger", "cancelKey", KeyCode.A);
-            useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
-            neverApplyOpponentsSkin = config.Bind<bool>("TextureChanger", "neverApplyOpponentsSkin", false);
-            lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
-            assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
-            config.Bind("TextureChanger", "gap1", "20", "modmenu_gap");
-
-            config.Bind("TextureChanger", "rt_skin_edit_header", "Real-time Skin editing:", "modmenu_header");
-            reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
-            reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
-            reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", true);
-            skinReloadIntervalInFrames = config.Bind<int>("TextureChanger", "skinReloadIntervalInFrames", 60);
-            config.Bind("TextureChanger", "gap2", "20", "modmenu_gap");
-
-            config.Bind("TextureChanger", "general_header", "General:", "modmenu_header");
-            showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
-            config.Bind("TextureChanger", "gap3", "20", "modmenu_gap");
-        }
     }
 }
 

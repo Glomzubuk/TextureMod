@@ -178,13 +178,13 @@ namespace TextureMod.TMPlayer
         private int skinCounter = 0;
         public void NextSkin(Character character, bool random = false)
         {
-            if (customSkin?.Character != Player.CharacterSelected) skinCounter = 0;
+            if (CustomSkin?.Character != Player.CharacterSelected) skinCounter = 0;
             this.ChangeSkin(character, skinCounter++, random);
         }
 
         public void PreviousSkin(Character character, bool random = false)
         {
-            if (customSkin?.Character != Player.CharacterSelected) skinCounter = 0;
+            if (CustomSkin?.Character != Player.CharacterSelected) skinCounter = 0;
             this.ChangeSkin(character, --skinCounter, random);
         }
 
@@ -197,7 +197,7 @@ namespace TextureMod.TMPlayer
             else
             {
                 // TODO Improve that
-                List<CustomSkin> skins = TextureMod.customSkinCache.GetUsableSkins(character);
+                List<CustomSkinHandler> skins = SkinsManager.skinCache.GetUsableHandlers(character);
                 if (skins == null) return;
 
                 Logger.LogDebug($"Counter: {skinCounter}, skin length: {skins.Count}");
@@ -234,19 +234,19 @@ namespace TextureMod.TMPlayer
         {
             LLButton[] buttons = UnityEngine.Object.FindObjectsOfType<LLButton>();
 
-            if (TextureMod.Instance.tc.useOnlySetKey.Value == true)
+            if (TextureMod.useOnlySetKey.Value == true)
             {
                 HandleSkinChangeButtonDown();
                 return;
             }
 
-            if (Input.GetKey(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+            if (Input.GetKey(TextureMod.holdKey1.Value) && buttons.Length > 0)
             {
                 HandleSkinChangeButtonDown();
 
                 foreach (LLButton b in buttons) b.SetActive(false); //Deactivate buttons
             }
-            else if (Input.GetKeyUp(TextureMod.Instance.tc.holdKey1.Value) && buttons.Length > 0)
+            else if (Input.GetKeyUp(TextureMod.holdKey1.Value) && buttons.Length > 0)
             {
                 foreach (LLButton b in buttons) b.SetActive(true); //Reactivate buttons
             }
@@ -260,11 +260,11 @@ namespace TextureMod.TMPlayer
 
             
 
-            if (Input.GetKeyDown(TextureMod.Instance.tc.nextSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_RIGHT))
+            if (Input.GetKeyDown(TextureMod.nextSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_RIGHT))
             {
                 NextSkin(this.Player.Character);
             }
-            else if (Input.GetKeyDown(TextureMod.Instance.tc.previousSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_LEFT))
+            else if (Input.GetKeyDown(TextureMod.previousSkin.Value) || Controller.FromNr(this.Player.nr, false).GetButtonDown(InputAction.EXPRESS_LEFT))
             {
                 PreviousSkin(this.Player.Character);
             }

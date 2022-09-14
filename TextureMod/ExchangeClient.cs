@@ -43,7 +43,7 @@ namespace TextureMod
                 if (tmPlayer.HasCustomSkin())
                 {
                     List<byte> payload = new List<byte>();
-                    byte[] skinHash = (byte[])tmPlayer.customSkin.SkinHash;
+                    byte[] skinHash = (byte[])tmPlayer.CustomSkin.SkinHash;
                     payload.Add((byte)skinHash.Length);
                     payload.AddRange(skinHash);
                     return payload.ToArray();
@@ -68,10 +68,10 @@ namespace TextureMod
             {
                 SkinHash skinHash = new SkinHash(rawHash);
                 TextureMod.Log.LogDebug("Test: " + skinHash);
-                CustomSkinHandler handler = TextureMod.customSkinCache.GetHandlerFromHash(skinHash);
+                CustomSkinHandler handler = SkinsManager.skinCache.GetHandlerFromHash(skinHash);
                 if (handler != null)
                 {
-                    tmPlayer.SetCustomSkin(handler.CustomSkin);
+                    tmPlayer.SetCustomSkin(handler);
                     GameStatesLobbyUtils.RefreshPlayerState(tmPlayer.Player);
                 }
                 else
@@ -96,7 +96,7 @@ namespace TextureMod
             if (msg.playerNr == P2P.localPeer.playerNr) return;
             SkinHash skinHash = new SkinHash((byte[])msg.ob);
             TextureMod.Log.LogDebug("Received skin request for hash: " + skinHash);
-            CustomSkin skin = TextureMod.customSkinCache.GetSkinFromHash(skinHash);
+            CustomSkin skin = SkinsManager.skinCache.GetSkinFromHash(skinHash);
             if (skin != null)
             {
                 SendSkin(msg.playerNr, msg.index, skin);
@@ -122,7 +122,7 @@ namespace TextureMod
                 //TODO Load skin in cache
                 TextureMod.Instance.tc.debug[3] = "Got non null skin and set should refresh to true";
                 TexModPlayer player = TexModPlayerManager.Instance.tmPlayers[msg.playerNr];
-                player.SetCustomSkin(receivedSkinHandler.CustomSkin);
+                player.SetCustomSkin(receivedSkinHandler);
             }
         }
     }

@@ -29,10 +29,6 @@ namespace TextureMod.TMPlayer
             set { tmPlayers[Player.LocalPlayerNumber] = value; }
         }
 
-
-        public TexModPlayerManager()
-        {
-        }
         void Awake()
         {
             Instance = this;
@@ -101,7 +97,7 @@ namespace TextureMod.TMPlayer
             ForAllTexmodPlayers((TexModPlayer tmp) =>
             {
                 if (tmp.Player.nr == localPlayer.Player.nr) return;
-                if (tmp.HasCustomSkin() && tmp.customSkin?.SkinHash == localPlayer.customSkin?.SkinHash)
+                if (tmp.HasCustomSkin() && tmp.CustomSkin?.SkinHash == localPlayer.CustomSkin?.SkinHash)
                 {
                     tmp.SetColorFilter((SkinColorFilter)tmp.Player.nr + 1);
                 }
@@ -123,12 +119,18 @@ namespace TextureMod.TMPlayer
         }
 
 
-
+        public static void ForAllLocalTexmodPlayers(Action<TexModPlayer> action)
+        {
+            foreach (TexModPlayer tmPlayer in Instance.tmPlayers)
+            {
+                if (tmPlayer != null && tmPlayer is LocalTexModPlayer) action(tmPlayer);
+            }
+        }
         public static void ForAllRemoteTexmodPlayers(Action<TexModPlayer> action)
         {
             foreach (TexModPlayer tmPlayer in Instance.tmPlayers)
             {
-                if (tmPlayer != null) action(tmPlayer);
+                if (tmPlayer != null && tmPlayer is RemoteTexModPlayer) action(tmPlayer);
             }
         }
 

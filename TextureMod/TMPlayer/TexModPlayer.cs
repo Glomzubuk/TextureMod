@@ -17,7 +17,7 @@ namespace TextureMod.TMPlayer
         public TexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null)
         {
             this.Player = player;
-            this.customSkin = skin;
+            this.skinHandler = new CustomSkinHandler(skin);
             this.characterModel = model ?? GetCurrentCharacterModelFor(this.Player.nr);
 
         }
@@ -26,14 +26,15 @@ namespace TextureMod.TMPlayer
 
         public CharacterModel characterModel = null;
 
-        public CustomSkin customSkin = null;
-        public bool HasCustomSkin() => customSkin != null;
+        public CustomSkinHandler skinHandler = null;
+        public bool HasCustomSkin() => skinHandler?.CustomSkin != null;
+        public CustomSkin CustomSkin => skinHandler?.CustomSkin;
         public Texture2D Texture
         {
             get
             {
                 if (SkinColorOverride == SkinColorFilter.NONE)
-                    return customSkin?.Texture;
+                    return CustomSkin.Texture;
                 else
                     return Texture;
             }
@@ -42,8 +43,8 @@ namespace TextureMod.TMPlayer
                 Texture = value;
             }
         }
-        public Character CustomSkinCharacter => customSkin?.Character ?? Character.NONE;
-        public CharacterVariant CustomSkinCharacterVariant => customSkin?.CharacterVariant ?? CharacterVariant.CORPSE;
+        public Character CustomSkinCharacter => CustomSkin?.Character ?? Character.NONE;
+        public CharacterVariant CustomSkinCharacterVariant => CustomSkin?.CharacterVariant ?? CharacterVariant.CORPSE;
 
 
         public bool ShouldRefreshSkin { get; set; }
@@ -56,7 +57,7 @@ namespace TextureMod.TMPlayer
 
         public virtual void Update()
         {
-            if (this.customSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || this.Player.CharacterVariant != this.CustomSkinCharacterVariant))
+            if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || this.Player.CharacterVariant != this.CustomSkinCharacterVariant))
             {
                 if (ShouldRefreshSkin)
                 {
@@ -75,7 +76,7 @@ namespace TextureMod.TMPlayer
             if (screenZero?.screenType == ScreenType.GAME_RESULTS)
             {
                 PostScreen postScreen = screenZero as PostScreen;
-                if (customSkin != null) // postScreen.winner.nr
+                if (CustomSkin != null) // postScreen.winner.nr
                 {
 
                     if (postScreen.winner.CJFLMDNNMIE == this.Player.nr) // postScreen.winner.nr
@@ -124,7 +125,7 @@ namespace TextureMod.TMPlayer
 
 
             this.characterModel?.SetSilhouette(false);
-            if (this.customSkin != null)
+            if (this.CustomSkin != null)
             {
                 AssignTextureToCharacterModelRenderers();
             }
@@ -166,15 +167,15 @@ namespace TextureMod.TMPlayer
                     case SkinColorFilter.NONE:
                         Texture = null; break;
                     case SkinColorFilter.GRAY:
-                        Texture = EffectsHandler.GetGrayscaledCopy(customSkin.Texture); break;
+                        Texture = EffectsHandler.GetGrayscaledCopy(CustomSkin.Texture); break;
                     case SkinColorFilter.BLUE:
-                        Texture = EffectsHandler.GetColoredCopy(customSkin.Texture, new Color(0,0,255)); break;
+                        Texture = EffectsHandler.GetColoredCopy(CustomSkin.Texture, new Color(0,0,255)); break;
                     case SkinColorFilter.GREEN:
-                        Texture = EffectsHandler.GetColoredCopy(customSkin.Texture, new Color(0, 255, 0)); break;
+                        Texture = EffectsHandler.GetColoredCopy(CustomSkin.Texture, new Color(0, 255, 0)); break;
                     case SkinColorFilter.RED:
-                        Texture = EffectsHandler.GetColoredCopy(customSkin.Texture, new Color(255, 0, 0)); break;
+                        Texture = EffectsHandler.GetColoredCopy(CustomSkin.Texture, new Color(255, 0, 0)); break;
                     case SkinColorFilter.YELLOW:
-                        Texture = EffectsHandler.GetColoredCopy(customSkin.Texture, new Color(0, 255, 255)); break;
+                        Texture = EffectsHandler.GetColoredCopy(CustomSkin.Texture, new Color(0, 255, 255)); break;
                 }
                 SkinColorOverride = filter;
                 this.ShouldRefreshSkin = true;
@@ -233,13 +234,13 @@ namespace TextureMod.TMPlayer
 
         }
 
-        public void SetCustomSkin(CustomSkin customSkin)
+        public void SetCustomSkin(CustomSkinHandler skinHandler)
         {
-            this.customSkin = customSkin;
-            if (this.customSkin == null) { return; }
-            if (this.Player.Character != customSkin.Character || this.Player.CharacterVariant != customSkin.CharacterVariant)
+            this.skinHandler = skinHandler;
+            if (this.CustomSkin == null) { return; }
+            if (this.Player.Character != CustomSkin.Character || this.Player.CharacterVariant != CustomSkin.CharacterVariant)
             {
-                SetCharacter(customSkin.Character, customSkin.CharacterVariant);
+                SetCharacter(CustomSkin.Character, CustomSkin.CharacterVariant);
 
             }
             GameStatesLobbyUtils.RefreshPlayerState(this.Player);
@@ -247,16 +248,16 @@ namespace TextureMod.TMPlayer
 
         public void RemoveCustomSkin()
         {
-            if (this.customSkin == null) { return; }
-            this.customSkin = null;
+            if (this.CustomSkin == null) { return; }
+            this.skinHandler = null;
         }
 
         public void SetCharacter(Character character, CharacterVariant characterVariant = CharacterVariant.DEFAULT)
         {
             if (LLBML.States.GameStates.IsInLobby())
             {
-                this.Player.Character = customSkin.Character;
-                this.Player.CharacterVariant = customSkin.CharacterVariant;
+                this.Player.Character = skinHandler.CustomSkin.Character;
+                this.Player.CharacterVariant = skinHandler.CustomSkin.CharacterVariant;
                 bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
                 this.UpdateModel();
                 this.characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
@@ -267,9 +268,9 @@ namespace TextureMod.TMPlayer
 
         virtual protected void ShowSkinNametags()
         {
-            if (customSkin != null) //Show skin nametags
+            if (CustomSkin != null) //Show skin nametags
             {
-                string labelTxt = customSkin.GetSkinLabel();
+                string labelTxt = CustomSkin.GetSkinLabel();
                 GUI.skin.box.wordWrap = false;
                 GUIContent content = new GUIContent(labelTxt);
                 //TODO move that in localTexModPlayer

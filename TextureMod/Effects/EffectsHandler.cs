@@ -106,11 +106,11 @@ namespace TextureMod
         #region Dust&Ashes Effects
         public static void AshesIngameEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.customSkin?.Texture != null)
+            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin?.Texture != null)
             {
                 if (tmPlayer.PlayerEntity.character == Character.BAG)
                 {
-                    AssignAshesOutlineColor(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                    AssignAshesOutlineColor(tmPlayer.PlayerEntity, tmPlayer.Texture);
                 }
             }
         }
@@ -149,9 +149,9 @@ namespace TextureMod
             {
                 if (mainBall.GetLastPlayerHitter().character == Character.CANDY)
                 {
-                    if (mainBall.GetLastPlayerHitter() == tmPlayer.PlayerEntity && tmPlayer.customSkin != null)
+                    if (mainBall.GetLastPlayerHitter() == tmPlayer.PlayerEntity && tmPlayer.CustomSkin != null)
                     {
-                        AssignSkinToCandyball(mainBall, tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                        AssignSkinToCandyball(mainBall, tmPlayer.PlayerEntity, tmPlayer.Texture);
                     }
                     else AssignSkinToCandyball(mainBall, mainBall.GetLastPlayerHitter(), null);
                 }
@@ -188,7 +188,7 @@ namespace TextureMod
 
                     if (effect.name == "candySplash")
                     {
-                        Texture2D tex = CheckPlayerOrMainBallSplashEffect(tmPlayer.PlayerEntity, effect, tmPlayer.customSkin.Texture) ?? null;
+                        Texture2D tex = CheckPlayerOrMainBallSplashEffect(tmPlayer.PlayerEntity, effect, tmPlayer.CustomSkin.Texture) ?? null;
 
                         if (tex != null)
                         {
@@ -243,18 +243,18 @@ namespace TextureMod
         {
             var mainBall = BallApi.GetBall(0);
 
-            if (tmPlayer.PlayerEntity != null && tmPlayer.customSkin != null)
+            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null)
             {
                 if (mainBall?.ballData.hitstunState == HitstunState.TELEPORT_STUN || mainBall?.ballData.hitstunState == HitstunState.BUNT_STUN)
                 {
                     if (mainBall.GetLastPlayerHitter() == tmPlayer.PlayerEntity)
                     {
-                        AssignGridSpecialColor(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                        AssignGridSpecialColor(tmPlayer.PlayerEntity, tmPlayer.Texture);
                     }
                 }
                 else if (tmPlayer.PlayerEntity.GetCurrentAbility()?.name.Contains("ELECTROCHARGE") != null)
                 {
-                    AssignGridSpecialColor(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                    AssignGridSpecialColor(tmPlayer.PlayerEntity, tmPlayer.Texture);
                 }
             }
         }
@@ -309,9 +309,9 @@ namespace TextureMod
         #region Doombox Effects
         public static void DBEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.customSkin != null)
+            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null)
             {
-                AssignVisualizer(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                AssignVisualizer(tmPlayer.PlayerEntity, tmPlayer.Texture);
             }
         }
 
@@ -370,11 +370,11 @@ namespace TextureMod
 
         public static void ToxicIngameEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.customSkin != null)
+            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null)
             {
                 if (tmPlayer.PlayerEntity.character == Character.GRAF && tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
                 {
-                    AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                    AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.Texture);
                 }
             }
         }
@@ -428,13 +428,16 @@ namespace TextureMod
         public static void JetIngameEffects(TexModPlayer tmPlayer)
         {
             var mainBall = BallApi.GetBall(0);
-            if (mainBall.GetLastPlayerHitter() == tmPlayer.PlayerEntity && tmPlayer.customSkin != null) AssignBubbleVisual(tmPlayer.PlayerEntity.variant, tmPlayer.customSkin.Texture);
+            if (mainBall.GetLastPlayerHitter() == tmPlayer.PlayerEntity && tmPlayer.CustomSkin != null)
+            {
+                AssignBubbleVisual(tmPlayer.PlayerEntity.variant, tmPlayer.Texture);
+            }
 
-            if (tmPlayer.PlayerEntity && tmPlayer.customSkin != null)
+            if (tmPlayer.PlayerEntity && tmPlayer.CustomSkin != null)
             {
                 if (tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT2)
                 {
-                    AssignJetScubaVisor(tmPlayer.PlayerEntity, tmPlayer.customSkin.Texture);
+                    AssignJetScubaVisor(tmPlayer.PlayerEntity, tmPlayer.Texture);
                 }
             }
         }

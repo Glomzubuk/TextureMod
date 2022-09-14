@@ -56,6 +56,25 @@ namespace TextureMod.CustomSkins
             this.Add(character, newHandler);
         }
 
+        public void ReloadSkins(Character character = Character._MAX_NORMAL)
+        {
+            if (character == Character._MAX_NORMAL)
+            {
+                foreach (Character _character in CharacterApi.GetPlayableCharacters())
+                {
+                    ReloadSkins(_character);
+                }
+            }
+            else
+            {
+                var skinHandlers = GetHandlers(character);
+                foreach (var skinHandler in skinHandlers)
+                {
+                    skinHandler.ReloadSkin();
+                }
+            }
+        }
+
 
         public override void Add(Character key, CustomSkinHandler newSkin)
         {
@@ -93,6 +112,12 @@ namespace TextureMod.CustomSkins
             return this.GetHandler(key)?.CustomSkin;
         }
 
+        public List<CustomSkinHandler> GetUsableHandlers(Character key)
+        {
+            return this.GetHandlers(key)?
+                .Where((CustomSkinHandler csh) => csh.CanBeUsed() == true)
+                .ToList();
+        }
         public List<CustomSkin> GetUsableSkins(Character key)
         {
             return this.GetHandlers(key)?

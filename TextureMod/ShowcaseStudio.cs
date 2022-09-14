@@ -396,8 +396,8 @@ namespace TextureMod
                 GUILayout.Box("General");
                 GUILayout.Label("Hide GUI: [" + showcaseStudioHideHud.Value + "]");
                 GUILayout.Label("Exit ShowcaseStudio: [" + enterShowcaseStudio.Value + ", ESC or Right Click]");
-                GUILayout.Label("Reload current skin [" + TextureMod.Instance.tc.reloadCustomSkin.Value + "]");
-                GUILayout.Label("Reimport skin library [" + TextureMod.Instance.tc.reloadEntireSkinLibrary.Value + "]");
+                GUILayout.Label("Reload current skin [" + TextureMod.reloadCustomSkin.Value + "]");
+                GUILayout.Label("Reimport skin library [" + TextureMod.reloadEntireSkinLibrary.Value + "]");
 
                 GUILayout.Space(20);
 

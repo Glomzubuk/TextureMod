@@ -16,7 +16,7 @@ namespace TextureMod
 
         private void OnGUI()
         {
-            if (TextureMod.Instance.tc.showDebugInfo.Value)
+            if (TextureMod.showDebugInfo.Value)
             {
 
                 GUIStyle ss = new GUIStyle("Box");

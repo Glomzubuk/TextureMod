@@ -2,12 +2,10 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
-using LLHandlers;
-using LLScreen;
 using Steamworks;
 using BepInEx;
 using BepInEx.Logging;
-using LLBML;
+using BepInEx.Configuration;
 using TextureMod.TMPlayer;
 using TextureMod.CustomSkins;
 
@@ -26,14 +24,14 @@ namespace TextureMod
         private const string repositoryName = "LLBMM-TextureMod";
         #endregion
 
-        public string debug = "";
+        //public string debug = "";
 
         #region instances
         public static TextureMod Instance { get; private set; } = null;
         public static ManualLogSource Log { get; private set; } = null;
         public TextureChanger tc = null;
-        public TextureLoader tl = null;
         public TexModPlayerManager tmpl = null;
+        public SkinsManager sm = null;
         public ModDebugging md = null;
         public EffectChanger effectChanger = null;
         public ShowcaseStudio showcaseStudio = null;
@@ -44,9 +42,6 @@ namespace TextureMod
         public static DirectoryInfo ModdingFolder { get; private set; }
         #endregion
 
-        public static CustomSkinCache customSkinCache;
-        public string retSkin = "";
-
         public static List<Character> ownedDLCs = new List<Character>();
         public static bool hasDLC = false;
         public static string loadingText = $"TextureMod is loading External Textures...";
@@ -56,21 +51,17 @@ namespace TextureMod
             Logger.LogInfo("Hello, World!");
             ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
             ModdingFolder = LLBML.Utils.ModdingFolder.GetModSubFolder(this.Info);
-            customSkinCache = new CustomSkinCache();
             Instance = this;
             Log = this.Logger;
+            InitConfig();
         }
 
         private void Start()
         {
-            Logger.LogInfo("Loading Modding folder");
-            customSkinCache.LoadSkins(ModdingFolder.CreateSubdirectory("Characters"));
+            SkinsManager.LoadLibrary();
 
-            Logger.LogInfo("Loading Resources folder");
-            var resourcesCharacterFolder = new DirectoryInfo(BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters"));
-            customSkinCache.LoadSkins(resourcesCharacterFolder);
-
-            //UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
+            // TODO Loading screen
+            // UIScreen.SetLoadingScreen(true, false, false, Stage.NONE);
             EffectsHandler.Init();
             ExchangeClient.Init();
             CheckIfPLayerHasDLC();
@@ -88,16 +79,12 @@ namespace TextureMod
                 "This mod was written by MrGentle"
             });
 
+            tmpl = gameObject.AddComponent<TexModPlayerManager>();
+            sm = gameObject.AddComponent<SkinsManager>();
         }
 
         private void Update()
         {
-            if (tl == null) { 
-                tl = gameObject.AddComponent<TextureLoader>(); 
-            } else if(tl.loadingExternalFiles == false) {
-                //LoadingScreen.SetLoading(this.Info, false);
-            }
-            if (tmpl == null) { tmpl = gameObject.AddComponent<TexModPlayerManager>(); }
             if (tc == null) { tc = gameObject.AddComponent<TextureChanger>(); }
             if (md == null) { md = gameObject.AddComponent<ModDebugging>(); }
             if (effectChanger == null) { effectChanger = gameObject.AddComponent<EffectChanger>(); }
@@ -125,8 +112,8 @@ namespace TextureMod
             GUI.contentColor = OriginalColor;
             GUI.skin.label.fontSize = OriginalLabelFontSize;
             GUI.skin.label.alignment = OriginalLabelAlignment;
-            */
             GUI.Label(new Rect(5f, 5f, 1920f, 25f), debug);
+            */
         }
 
         private void CheckIfPLayerHasDLC()
@@ -144,5 +131,61 @@ namespace TextureMod
             if (AALLGKBNLBO.OEBMADMCBAE(new AppId_t(1431712))) ownedDLCs.Add(Character.CANDY);
             if (AALLGKBNLBO.OEBMADMCBAE(new AppId_t(1431700))) ownedDLCs.Add(Character.COP);
         }
+
+        bool CheckHasDLCForCharacter(Character character)
+        {
+            foreach (Character DLC in TextureMod.ownedDLCs)
+            {
+                if (DLC == character)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #region Configuration
+        public static ConfigEntry<KeyCode> holdKey1;
+        public static ConfigEntry<KeyCode> nextSkin;
+        public static ConfigEntry<KeyCode> previousSkin;
+        public static ConfigEntry<KeyCode> cancelKey;
+        public static ConfigEntry<KeyCode> reloadCustomSkin;
+        public static ConfigEntry<KeyCode> reloadEntireSkinLibrary;
+        public static ConfigEntry<bool> useOnlySetKey;
+        public static ConfigEntry<bool> neverApplyOpponentsSkin;
+        public static ConfigEntry<bool> showDebugInfo;
+        public static ConfigEntry<bool> lockButtonsOnRandom;
+        public static ConfigEntry<bool> reloadCustomSkinOnInterval;
+        public static ConfigEntry<int> skinReloadIntervalInFrames;
+        public static ConfigEntry<bool> assignFirstSkinOnCharacterSelection;
+
+        private void InitConfig()
+        {
+
+            ConfigFile config = TextureMod.Instance.Config;
+
+            config.Bind("TextureChanger", "lobby_settings_header", "Lobby Settings:", new ConfigDescription("", null, "modmenu_header"));
+            holdKey1 = config.Bind<KeyCode>("TextureChanger", "holdKey1", KeyCode.LeftShift);
+            nextSkin = config.Bind<KeyCode>("TextureChanger", "nextSkin", KeyCode.Mouse0);
+            previousSkin = config.Bind<KeyCode>("TextureChanger", "previousSkin", KeyCode.Mouse1);
+            cancelKey = config.Bind<KeyCode>("TextureChanger", "cancelKey", KeyCode.A);
+            useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
+            neverApplyOpponentsSkin = config.Bind<bool>("TextureChanger", "neverApplyOpponentsSkin", false);
+            lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
+            assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
+            config.Bind("TextureChanger", "gap1", "20", new ConfigDescription("",null,"modmenu_gap"));
+
+            config.Bind("TextureChanger", "rt_skin_edit_header", "Real-time Skin editing:", new ConfigDescription("", null, "modmenu_header"));
+            reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
+            reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
+            reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", true);
+            skinReloadIntervalInFrames = config.Bind<int>("TextureChanger", "skinReloadIntervalInFrames", 60);
+            config.Bind("TextureChanger", "gap2", "20", new ConfigDescription("", null, "modmenu_gap"));
+
+            config.Bind("TextureChanger", "general_header", "General:", new ConfigDescription("", null, "modmenu_header"));
+            showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
+            config.Bind("TextureChanger", "gap3", "20", new ConfigDescription("", null, "modmenu_gap"));
+        }
+        #endregion
     }
 }
