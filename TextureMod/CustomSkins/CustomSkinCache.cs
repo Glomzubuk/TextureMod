@@ -8,7 +8,7 @@ using BepInEx.Logging;
 using LLBML;
 using LLBML.Utils;
 
-namespace TextureMod
+namespace TextureMod.CustomSkins
 {
     public class CustomSkinCache : GenericCache<Character, CustomSkinHandler>
     {

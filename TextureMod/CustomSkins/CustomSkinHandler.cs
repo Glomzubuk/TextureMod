@@ -4,7 +4,7 @@ using UnityEngine;
 using BepInEx.Logging;
 using LLBML.Texture;
 
-namespace TextureMod
+namespace TextureMod.CustomSkins
 {
     public class CustomSkinHandler
     {

@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using BepInEx.Logging;
+using TextureMod.CustomSkins;
 
 
 namespace TextureMod

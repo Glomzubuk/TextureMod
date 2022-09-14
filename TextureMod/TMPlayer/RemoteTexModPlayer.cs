@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using LLBML.Players;
+using TextureMod.CustomSkins;
 
 namespace TextureMod.TMPlayer
 {

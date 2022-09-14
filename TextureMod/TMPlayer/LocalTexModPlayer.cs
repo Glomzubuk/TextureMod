@@ -11,6 +11,7 @@ using LLScreen;
 using LLBML;
 using LLBML.Players;
 using LLBML.States;
+using TextureMod.CustomSkins;
 
 namespace TextureMod.TMPlayer
 {

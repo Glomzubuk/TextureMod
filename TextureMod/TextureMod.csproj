@@ -106,7 +106,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomSkin.cs" />
     <Compile Include="CustomStyle.cs" />
     <Compile Include="ExchangeClient.cs" />
     <Compile Include="ModDebugging.cs" />
@@ -118,7 +117,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PluginInfos.cs" />
     <Compile Include="VariantHelper.cs" />
-    <Compile Include="SkinCache.cs" />
     <Compile Include="TMPlayer\TexModPlayer.cs" />
     <Compile Include="TMPlayer\LocalTexModPlayer.cs" />
     <Compile Include="TMPlayer\RemoteTexModPlayer.cs" />
@@ -126,9 +124,10 @@
     <Compile Include="Effects\EffectChanger.cs" />
     <Compile Include="RendererHelper.cs" />
     <Compile Include="TMPlayer\TexModPlayerManager.cs" />
-    <Compile Include="CustomSkinCache.cs" />
-    <Compile Include="CustomSkinHandler.cs" />
-    <Compile Include="SkinHash.cs" />
+    <Compile Include="CustomSkins\CustomSkin.cs" />
+    <Compile Include="CustomSkins\CustomSkinCache.cs" />
+    <Compile Include="CustomSkins\CustomSkinHandler.cs" />
+    <Compile Include="CustomSkins\SkinHash.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -136,6 +135,7 @@
   <ItemGroup>
     <Folder Include="TMPlayer\" />
     <Folder Include="Effects\" />
+    <Folder Include="CustomSkins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

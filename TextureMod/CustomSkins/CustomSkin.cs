@@ -7,7 +7,7 @@ using UnityEngine;
 using BepInEx.Logging;
 using LLBML.Texture;
 
-namespace TextureMod
+namespace TextureMod.CustomSkins
 {
     public class CustomSkin
     {
@@ -95,7 +95,7 @@ namespace TextureMod
 
         public void RegenerateSkinHash()
         {
-            this.SkinHash = new SkinHash(this.Texture, this.Character, this.ModelVariant);
+            this.SkinHash = new SkinHash(this);
         }
 
         public override string ToString()

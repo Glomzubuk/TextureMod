@@ -14,7 +14,6 @@ namespace TextureMod.TMPlayer
     {
         public static TexModPlayerManager Instance { get; private set; }
         private static ManualLogSource Logger => TextureMod.Log;
-        public static SkinCache skinCache = new SkinCache();
 
         public List<TexModPlayer> tmPlayers = new List<TexModPlayer>(new TexModPlayer[Player.MAX_PLAYERS]);
         public List<RemoteTexModPlayer> Opponents

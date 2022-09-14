@@ -13,6 +13,7 @@ using LLBML.Players;
 using LLBML.Messages;
 using LLBML.Networking;
 using TextureMod.TMPlayer;
+using TextureMod.CustomSkins;
 
 namespace TextureMod
 {

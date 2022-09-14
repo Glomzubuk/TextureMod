@@ -8,6 +8,8 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using LLBML;
+using TextureMod.CustomSkins;
+
 namespace TextureMod
 {
     public class TextureChanger : MonoBehaviour

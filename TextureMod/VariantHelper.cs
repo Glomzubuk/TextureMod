@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using TextureMod.CustomSkins;
+
 namespace TextureMod
 {
     public static class VariantHelper

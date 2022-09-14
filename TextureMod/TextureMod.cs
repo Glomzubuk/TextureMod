@@ -9,6 +9,7 @@ using BepInEx;
 using BepInEx.Logging;
 using LLBML;
 using TextureMod.TMPlayer;
+using TextureMod.CustomSkins;
 
 
 namespace TextureMod
