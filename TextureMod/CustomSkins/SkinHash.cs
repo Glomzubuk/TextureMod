@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
+using LLBML.Math;
 using LLBML.Utils;
 
 namespace TextureMod.CustomSkins
@@ -34,7 +32,7 @@ namespace TextureMod.CustomSkins
 
         public static explicit operator SkinHash(byte[] a) => new SkinHash(a);
 
-        public override bool Equals(CustomSkin other) => ByteArraysEqual(this.Bytes, Compute(other.Texture,other.Character, other.ModelVariant));
+        public override bool Equals(CustomSkin other) => BinaryUtils.ByteArraysEqual(this.Bytes, Compute(other.Texture,other.Character, other.ModelVariant));
     }
 
 }
