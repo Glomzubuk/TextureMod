@@ -16,10 +16,8 @@ namespace TextureMod.TMPlayer
 
             if (this.Player != null && this.characterModel != null)
             {
-                Traverse tv_characterModel = Traverse.Create(characterModel);
-                //TODO AccessRef theses, it's reflection  every frame otherwise
-                Character modelCharacter = tv_characterModel.Field<Character>("character").Value;
-                CharacterVariant modelCharacterVariant = tv_characterModel.Field<CharacterVariant>("characterVariant").Value;
+                Character modelCharacter = characterModel.character;
+                CharacterVariant modelCharacterVariant = characterModel.characterVariant;
                 /*
                 if (
                     (modelCharacter != customSkin.Character || modelCharacterVariant != customSkin.CharacterVariant) &&

@@ -44,7 +44,7 @@ namespace TextureMod.TMPlayer
                 {
                     if (GameStates.IsInLobby())
                     {
-                        HandleSwitchSkinInputs();
+                        //HandleSwitchSkinInputs();
                     }
                     /*
                     if (HandleSwitchSkinInputs()) // Assign skin to local player
@@ -176,16 +176,20 @@ namespace TextureMod.TMPlayer
         }
 
         private int skinCounter = 0;
-        public void NextSkin(Character character, bool random = false)
+        public void NextSkin(Character character = Character.NONE, bool random = false)
         {
-            if (CustomSkin?.Character != Player.CharacterSelected) skinCounter = 0;
-            this.ChangeSkin(character, skinCounter++, random);
+            if (character == Character.NONE) character = Player.CharacterSelected;
+            if (CustomSkin?.Character != Player.CharacterSelected || character != Player.CharacterSelected) skinCounter = 0;
+            else skinCounter++;
+            this.ChangeSkin(character, skinCounter, random);
         }
 
-        public void PreviousSkin(Character character, bool random = false)
+        public void PreviousSkin(Character character = Character.NONE, bool random = false)
         {
-            if (CustomSkin?.Character != Player.CharacterSelected) skinCounter = 0;
-            this.ChangeSkin(character, --skinCounter, random);
+            if (character == Character.NONE) character = Player.CharacterSelected;
+            if (CustomSkin?.Character != Player.CharacterSelected || character != Player.CharacterSelected) skinCounter = -1;
+            else skinCounter--;
+            this.ChangeSkin(character, skinCounter, random);
         }
 
         public void ChangeSkin(Character character, int index, bool random = false)

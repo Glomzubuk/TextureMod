@@ -48,10 +48,6 @@
       <HintPath>Libs\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>Libs\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="BepInEx">
       <HintPath>Libs\BepInEx.dll</HintPath>
       <Private>False</Private>
@@ -104,6 +100,9 @@
       <HintPath>Libs\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp-nstrip">
+      <HintPath>Libs\Assembly-CSharp-nstrip.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomStyle.cs" />
@@ -128,6 +127,7 @@
     <Compile Include="CustomSkins\CustomSkinHandler.cs" />
     <Compile Include="CustomSkins\SkinHash.cs" />
     <Compile Include="CustomSkins\SkinsManager.cs" />
+    <Compile Include="HarmonyPatches.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

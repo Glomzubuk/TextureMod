@@ -14,7 +14,7 @@ namespace TextureMod.CustomSkins
     {
         private static ManualLogSource Logger => TextureMod.Log;
 
-        public static CustomSkinCache skinCache;
+        public static CustomSkinCache skinCache = new CustomSkinCache();
 
         private static int reloadCustomSkinTimer = 0;
 
@@ -31,11 +31,13 @@ namespace TextureMod.CustomSkins
 
                 Logger.LogInfo("Loading Resources folder");
                 var resourcesCharacterFolder = new DirectoryInfo(BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters"));
+                if (!resourcesCharacterFolder.Exists) resourcesCharacterFolder.Create();
                 skinCache.LoadSkins(resourcesCharacterFolder);
 
                 Logger.LogInfo("Loading Remote folder");
                 var remoteCharacterFolder = new DirectoryInfo(BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "RemoteSkinCache"));
-                skinCache.LoadSkins(resourcesCharacterFolder);
+                if (!remoteCharacterFolder.Exists) remoteCharacterFolder.Create();
+                skinCache.LoadSkins(remoteCharacterFolder);
             }
             catch (Exception e)
             {

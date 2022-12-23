@@ -82,12 +82,14 @@ namespace TextureMod.CustomSkins
 
         public bool CanBeUsed()
         {
-
-            if (CustomSkin.ModelVariant == ModelVariant.DLC && !TextureMod.ownedDLCs.Contains(CustomSkin.Character))
+            if (CustomSkin.ModelVariant == ModelVariant.DLC)
             {
-                Logger.LogWarning($"You tried to use a skin for which you do not have the DLC: {CustomSkin.Character.ToString()}. Couldn't add {CustomSkin.Name} to the cache");
-                //TODO Reenable this when i find a fix for the ownedDLCs
-                //return false;
+                DLC dlc = EPCDKLCABNC.LEMKFOAAMKA(CustomSkin.Character, CharacterVariant.MODEL_ALT3);
+                if (dlc != DLC.NONE && !CGLLJHHAJAK.GIGAKBJGFDI.EMPDGJDAGKO(dlc))
+                {
+                    Logger.LogWarning($"You tried to use a skin for which you do not have the DLC: {CustomSkin.Character.ToString()}. Couldn't add {CustomSkin.Name} to the cache");
+                    return false;
+                }
             }
             return true;
         }

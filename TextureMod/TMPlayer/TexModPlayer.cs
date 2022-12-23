@@ -261,7 +261,7 @@ namespace TextureMod.TMPlayer
                 bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
                 this.UpdateModel();
                 this.characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
-                this.characterModel.PlayCamAnim();
+                //this.characterModel.PlayCamAnim();
             }
         }
 
