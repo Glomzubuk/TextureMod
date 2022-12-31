@@ -47,7 +47,7 @@ Open your game and go to Options > Mod Settings > TextureMod and set your keybin
 Now enter a lobby, or showcase! In the lobby, select your character and press the button combination you assigned to set a custom skin. Press the combination multiple times to cycle through the skins.
 Your opponents custom skin will automatically be assigned if they choose one. You can also press your cancel button if you don’t want to see your opponents skin this game.
 
-** I want to test out skin creation, what's a good workflow?**  
+**I want to test out skin creation, what's a good workflow?**  
 Personally, i copy one of the included original character textures (which you can find in the mod folder) and copy it over to
 `<ModdingFolder>\TextureMod\Characters\<Character>\<Author>`
 then name it something like `01#WIP.png`
