@@ -13,6 +13,7 @@ namespace TextureMod.TMPlayer
     public class TexModPlayer
     {
         protected static BepInEx.Logging.ManualLogSource Logger => TextureMod.Log;
+        private Vector3 labelScreenPos;
 
         public TexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null)
         {
@@ -44,11 +45,13 @@ namespace TextureMod.TMPlayer
             }
         }
         public Character CustomSkinCharacter => CustomSkin?.Character ?? Character.NONE;
-        public CharacterVariant CustomSkinCharacterVariant => CustomSkin?.CharacterVariant ?? CharacterVariant.CORPSE;
+        public ModelVariant CustomSkinModelVariant => CustomSkin?.ModelVariant ?? ModelVariant.None;
 
 
         public bool ShouldRefreshSkin { get; set; }
         public SkinColorFilter SkinColorOverride { get; private set; } = SkinColorFilter.NONE;
+
+        
 
         public void SetPlayer(Player player)
         {
@@ -57,12 +60,13 @@ namespace TextureMod.TMPlayer
 
         public virtual void Update()
         {
-            if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || this.Player.CharacterVariant != this.CustomSkinCharacterVariant))
+            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
+            if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || !VariantHelper.VariantMatch(this.Player.CharacterVariant, this.CustomSkinModelVariant)))
             {
                 if (ShouldRefreshSkin)
                 {
                     this.Player.CharacterSelected = this.CustomSkinCharacter;
-                    this.Player.CharacterVariant = this.CustomSkinCharacterVariant;
+                    this.Player.CharacterVariant = VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant);
                     GameStatesLobbyUtils.RefreshLocalPlayerState();
                
                 }
@@ -72,7 +76,6 @@ namespace TextureMod.TMPlayer
                 }
             }
 
-            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
             if (screenZero?.screenType == ScreenType.GAME_RESULTS)
             {
                 PostScreen postScreen = screenZero as PostScreen;
@@ -89,11 +92,22 @@ namespace TextureMod.TMPlayer
 
             if (GameStates.IsInLobby())
             {
+                if (screenZero is ScreenPlayers sp)
+                {
+                    Camera cam = Camera.main;
+                    PlayersSelection ps = sp.playerSelections[Player.nr];
+                    RectTransform btTeamTr = ps.btTeam.transform as RectTransform;
+                    labelScreenPos = cam.WorldToScreenPoint(btTeamTr.position);
+                    labelScreenPos.y -= btTeamTr.rect.height;
+                }
+
                 this.characterModel?.SetSilhouette(false);
                 if (HasCustomSkin())
                 {
                     AssignTextureToCharacterModelRenderers();
                 }
+
+
             }
             else if (GameStates.IsInMatch() && HasCustomSkin() && PlayerEntity != null && Player.IsInMatch)
             {
@@ -112,6 +126,19 @@ namespace TextureMod.TMPlayer
         }
         public void FixedUpdate()
         {
+        }
+
+        public void OnGUI()
+        {
+            if (GameStates.IsInLobby())
+            {
+                this.characterModel?.SetSilhouette(false);
+                if (HasCustomSkin())
+                {
+                    ShowSkinNametags();
+                    AssignTextureToCharacterModelRenderers();
+                }
+            }
         }
 
         public void CheckMirrors()
@@ -238,11 +265,13 @@ namespace TextureMod.TMPlayer
         {
             this.skinHandler = skinHandler;
             if (this.CustomSkin == null) { return; }
-            if (this.Player.Character != CustomSkin.Character || this.Player.CharacterVariant != CustomSkin.CharacterVariant)
-            {
-                SetCharacter(CustomSkin.Character, CustomSkin.CharacterVariant);
-
-            }
+            //if (this.Player.Character != CustomSkin.Character || !VariantHelper.VariantMatch(this.Player.CharacterVariant, CustomSkin.ModelVariant))
+            //{
+                SetCharacter(CustomSkin.Character, VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant));
+            //}
+            bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
+            this.UpdateModel();
+            this.characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
             GameStatesLobbyUtils.RefreshPlayerState(this.Player);
         }
 
@@ -254,14 +283,20 @@ namespace TextureMod.TMPlayer
 
         public void SetCharacter(Character character, CharacterVariant characterVariant = CharacterVariant.DEFAULT)
         {
-            if (LLBML.States.GameStates.IsInLobby())
+            if (GameStates.IsInLobby())
             {
-                this.Player.Character = skinHandler.CustomSkin.Character;
-                this.Player.CharacterVariant = skinHandler.CustomSkin.CharacterVariant;
-                bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
-                this.UpdateModel();
-                this.characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
-                //this.characterModel.PlayCamAnim();
+                TexModPlayerManager.ForAllTexmodPlayers((tmPlayer) =>
+                {
+                    if (tmPlayer.Player.Character == character)
+                    {
+                        if (tmPlayer.Player.CharacterVariant == characterVariant)
+                        {
+                            characterVariant = VariantHelper.GetNextVariantForModel(CustomSkin.ModelVariant, characterVariant);
+                        }
+                    }
+                });
+                this.Player.Character = character;
+                this.Player.CharacterVariant = characterVariant;
             }
         }
 
@@ -279,30 +314,21 @@ namespace TextureMod.TMPlayer
                 GUI.skin.box.alignment = TextAnchor.MiddleCenter;
                 GUI.skin.box.fontSize = 22;
 
+                ScreenBase screenZero = ScreenApi.CurrentScreens[0];
                 ScreenBase screenOne = ScreenApi.CurrentScreens[1];
 
-                if (GameStates.IsInLobby())
+                if (GameStates.IsInLobby() && screenZero is ScreenPlayers sp)
                 {
-                    if (screenOne == null)
-                    {
-                        switch (StateApi.CurrentGameMode)
-                        {
-                            //TODO do that for more than 2 players
-                            case GameMode.TUTORIAL:
-                            case GameMode.TRAINING:
-                                GUI.Box(new Rect((Screen.width / 8), (Screen.height / 12.5f), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                            case GameMode._1v1:
-                                if (Player.nr == 0) GUI.Box(new Rect(Screen.width / 10, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt); //Check if local player is the player with ID 0
-                                else GUI.Box(new Rect((Screen.width / 20) * 12.95f, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                            case GameMode.FREE_FOR_ALL:
-                            case GameMode.COMPETITIVE:
-                                if (Player.nr == 0) GUI.Box(new Rect(0 + Screen.width / 250, Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                else GUI.Box(new Rect((Screen.width / 4) + (Screen.width / 250), Screen.height / 12.5f, GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                                break;
-                        }
-                    }
+                    Vector2 labelSizes = GUI.skin.box.CalcSize(content);
+
+                    Rect labelBox = new Rect(
+                        labelScreenPos.x - (labelSizes.x / 2), 
+                        Screen.height - (labelScreenPos.y),
+                        labelSizes.x,
+                        labelSizes.y
+                    );
+
+                    GUI.Box(labelBox, labelTxt);
                 }
 
                 //TODO move that stuff elsewhere, it's for the showcase, which shouldn' t use texmodplayer

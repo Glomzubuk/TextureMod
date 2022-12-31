@@ -15,6 +15,7 @@ namespace TextureMod.CustomSkins
         public bool InUse { get; private set; } = false;
         public bool Enabled { get; private set; } = true;
         public bool InMemory { get; private set; } = false;
+        public bool IsRemote { get; set; } = false;
         public FileInfo FileLocation { get; private set; } = null;
 
 
@@ -82,6 +83,10 @@ namespace TextureMod.CustomSkins
 
         public bool CanBeUsed()
         {
+            if (this.IsRemote)
+            {
+                return false;
+            }
             if (CustomSkin.ModelVariant == ModelVariant.DLC)
             {
                 DLC dlc = EPCDKLCABNC.LEMKFOAAMKA(CustomSkin.Character, CharacterVariant.MODEL_ALT3);

@@ -1,12 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using TextureMod.CustomSkins;
 
 namespace TextureMod
 {
     public static class VariantHelper
     {
-
+        public static List<CharacterVariant> DefaultModelVariants = new List<CharacterVariant>
+        {
+            CharacterVariant.DEFAULT,
+            CharacterVariant.ALT0,
+            CharacterVariant.ALT1,
+            CharacterVariant.ALT2,
+            CharacterVariant.ALT3,
+            CharacterVariant.ALT4,
+            CharacterVariant.ALT5,
+            CharacterVariant.ALT6,
+            CharacterVariant.STATIC_ALT,
+        };
+        public static List<CharacterVariant> AltModelVariants = new List<CharacterVariant>
+        {
+            CharacterVariant.MODEL_ALT,
+            CharacterVariant.MODEL_ALT2,
+        };
+        public static List<CharacterVariant> DLCModelVariants = new List<CharacterVariant>
+        {
+            CharacterVariant.MODEL_ALT3,
+            CharacterVariant.MODEL_ALT4,
+        };
 
         public static bool VariantMatch(CharacterVariant characterVariant, ModelVariant modelVariant)
         {
@@ -39,20 +60,61 @@ namespace TextureMod
             else return ModelVariant.Default;
         }
 
+        public static ModelVariant GetModelVariant(CharacterVariant characterVariant)
+        {
+            if (DefaultModelVariants.Contains(characterVariant)) return ModelVariant.Default;
+            else if (AltModelVariants.Contains(characterVariant)) return ModelVariant.Alternative;
+            else if (DLCModelVariants.Contains(characterVariant)) return ModelVariant.DLC;
+            else return ModelVariant.None;
+        }
+
 
         public static CharacterVariant GetDefaultVariantForModel(ModelVariant variantType)
         {
             switch (variantType)
             {
-                case ModelVariant.Alternative:
-                    return CharacterVariant.MODEL_ALT;
-                case ModelVariant.DLC:
-                    return CharacterVariant.MODEL_ALT3;
                 case ModelVariant.Default:
-                    return CharacterVariant.DEFAULT;
+                    return DefaultModelVariants[0];
+                case ModelVariant.Alternative:
+                    return AltModelVariants[0];
+                case ModelVariant.DLC:
+                    return DLCModelVariants[0];
                 default:
                     return CharacterVariant.DEFAULT;
             }
         }
+        public static List<CharacterVariant> GetVariantsForModel(ModelVariant variantType)
+        {
+            switch (variantType)
+            {
+                case ModelVariant.Default:
+                    return DefaultModelVariants;
+                case ModelVariant.Alternative:
+                    return AltModelVariants;
+                case ModelVariant.DLC:
+                    return DLCModelVariants;
+                default:
+                    return null;
+            }
+        }
+        public static CharacterVariant GetNextVariantForModel(ModelVariant variantType, CharacterVariant characterVariant)
+        {
+            List<CharacterVariant> availableVariants = GetVariantsForModel(variantType);
+            if (VariantMatch(characterVariant, variantType))
+            {
+                int index = availableVariants.IndexOf(characterVariant);
+                return availableVariants[(index + 1) % availableVariants.Count];
+            }
+
+            return CharacterVariant.STATIC_ALT;
+        }
+    }
+
+    public enum ModelVariant
+    {
+        None,
+        Default,
+        Alternative,
+        DLC,
     }
 }

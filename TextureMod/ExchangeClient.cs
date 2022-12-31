@@ -7,6 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using Multiplayer;
+using BepInEx.Logging;
 using LLBML;
 using LLBML.States;
 using LLBML.Players;
@@ -19,6 +20,7 @@ namespace TextureMod
 {
     public static class ExchangeClient
     {
+        private static ManualLogSource Logger => TextureMod.Log;
         enum TexModMessages
         {
             TEXMOD_SKINCHECK = 4040,
@@ -30,8 +32,9 @@ namespace TextureMod
         {
             var pInfo = TextureMod.Instance.Info;
             MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKINREQUEST, TexModMessages.TEXMOD_SKINREQUEST.ToString(), ReceiveSkinRequest);
-            MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKIN, TexModMessages.TEXMOD_SKIN.ToString(), ReceiveSkin);
+            MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKIN, TexModMessages.TEXMOD_SKIN.ToString(), ReceiveSkinFromMessage);
             PlayerLobbyState.RegisterPayload(pInfo, OnSendPayload, OnReceivePayload);
+            NetworkApi.RegisterModPacketCallback(pInfo, OnReceiveModPacket);
         }
 
         public static byte[] OnSendPayload(PlayerLobbyState pls)
@@ -67,21 +70,25 @@ namespace TextureMod
             try
             {
                 SkinHash skinHash = new SkinHash(rawHash);
-                TextureMod.Log.LogDebug("Test: " + skinHash);
+                Logger.LogDebug($"Player {pls.playerNr} has custom skin: " + skinHash);
                 CustomSkinHandler handler = SkinsManager.skinCache.GetHandlerFromHash(skinHash);
                 if (handler != null)
                 {
+                    Logger.LogDebug($"Skin is known, applying." );
                     tmPlayer.SetCustomSkin(handler);
                     GameStatesLobbyUtils.RefreshPlayerState(tmPlayer.Player);
                 }
                 else
                 {
+                    Logger.LogDebug($"Skin is not known, requesting.");
                     SendSkinRequest(tmPlayer.Player.nr, skinHash);
                 }
-
+    
             }
-            catch
-            { }
+            catch (Exception e)
+            {
+                Logger.LogError("Caught Exception trying to receive lobby state: " + e);
+            }
         }
 
         private static int transactionIDCounter = 0;
@@ -107,21 +114,35 @@ namespace TextureMod
         {
             TextureMod.Log.LogDebug($"Sending skin {skin.Name} to player {playerNrToSendSkin}");
             byte[] skinAsBytes = skin.ToBytes();
-            NetworkApi.SendMessageToPlayer(playerNrToSendSkin, new Message((Msg)TexModMessages.TEXMOD_SKIN, P2P.localPeer.playerNr, requestID, skinAsBytes));
+            //NetworkApi.SendMessageToPlayer(playerNrToSendSkin, new Message((Msg)TexModMessages.TEXMOD_SKIN, P2P.localPeer.playerNr, requestID, skinAsBytes));
+            NetworkApi.SendModPacket(TextureMod.Instance.Info, Player.GetPlayer(playerNrToSendSkin), skinAsBytes);
         }
 
-        public static void ReceiveSkin(Message msg)
+        public static void OnReceiveModPacket(Peer sender, byte[] data)
         {
-            CustomSkin receivedSkin = CustomSkin.FromBytes((byte[])msg.ob);
-            TextureMod.Log.LogDebug($"Received skin from player {msg.playerNr}, is it null? {(receivedSkin == null? "Yes": "No")}");
+            ReceiveSkin(Player.GetPlayer(sender.playerNr), CustomSkin.FromBytes(data));
+        }
+
+        public static void ReceiveSkinFromMessage(Message msg)
+        {
+            ReceiveSkin(Player.GetPlayer(msg.playerNr), CustomSkin.FromBytes((byte[])msg.ob));
+        }
+
+        public static void ReceiveSkin(Player sender, CustomSkin receivedSkin)
+        {
+            TextureMod.Log.LogDebug($"Received skin from player {sender.nr}, is it null? {(receivedSkin == null ? "Yes" : "No")}");
             if (receivedSkin != null)
             {
-                TextureMod.Log.LogDebug($"Successfuly received {receivedSkin.Name} from player {msg.playerNr}");
+                TextureMod.Log.LogDebug($"Successfuly received {receivedSkin.Name} from player {sender.nr}");
 
-                CustomSkinHandler receivedSkinHandler = new CustomSkinHandler(receivedSkin);
+                CustomSkinHandler receivedSkinHandler = new CustomSkinHandler(receivedSkin)
+                {
+                    IsRemote = true
+                };
                 //TODO Load skin in cache
+                SkinsManager.skinCache.Add(receivedSkinHandler.CustomSkin.Character, receivedSkinHandler);
                 TextureMod.Instance.tc.debug[3] = "Got non null skin and set should refresh to true";
-                TexModPlayer player = TexModPlayerManager.Instance.tmPlayers[msg.playerNr];
+                TexModPlayer player = TexModPlayerManager.Instance.tmPlayers[sender.nr];
                 player.SetCustomSkin(receivedSkinHandler);
             }
         }

@@ -92,14 +92,22 @@ namespace TextureMod.TMPlayer
             }
         }
 
-        public void ManageMirrorSkins()
+        private void OnGUI()
+        {
+            foreach (TexModPlayer tmPlayer in tmPlayers)
+            {
+                tmPlayer.OnGUI();
+            }
+        }
+
+        public void HandleMirrorSkins()
         {
             ForAllTexmodPlayers((TexModPlayer tmp) =>
             {
                 if (tmp.Player.nr == localPlayer.Player.nr) return;
                 if (tmp.HasCustomSkin() && tmp.CustomSkin?.SkinHash == localPlayer.CustomSkin?.SkinHash)
                 {
-                    tmp.SetColorFilter((SkinColorFilter)tmp.Player.nr + 1);
+                    tmp.SetColorFilter((SkinColorFilter)tmp.Player.nr);
                 }
             });
         }

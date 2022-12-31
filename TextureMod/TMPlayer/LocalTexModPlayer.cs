@@ -205,10 +205,13 @@ namespace TextureMod.TMPlayer
                 if (skins == null) return;
 
                 Logger.LogDebug($"Counter: {skinCounter}, skin length: {skins.Count}");
-                this.SetCustomSkin(skins?[mod(index, skins.Count)]);
-                if (GameStates.IsInOnlineLobby())
+                if (skins.Count > 0)
                 {
-                    GameStatesLobbyUtils.SendPlayerState(this.Player);
+                    this.SetCustomSkin(skins?[mod(index, skins.Count)]);
+                    if (GameStates.IsInOnlineLobby())
+                    {
+                        GameStatesLobbyUtils.SendPlayerState(this.Player);
+                    }
                 }
             }
         }

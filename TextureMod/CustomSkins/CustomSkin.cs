@@ -16,7 +16,6 @@ namespace TextureMod.CustomSkins
         public SkinHash SkinHash { get; private set; }
         public Character Character { get; private set; }
         public ModelVariant ModelVariant { get; private set; }
-        public CharacterVariant CharacterVariant => VariantHelper.GetDefaultVariantForModel(ModelVariant);
         public Texture2D Texture { get; private set; }
         public string Author { get; private set; }
         public string Name { get; private set; }
@@ -100,15 +99,7 @@ namespace TextureMod.CustomSkins
 
         public override string ToString()
         {
-            return $"<CustomSkin: {Character} | {CharacterVariant} | {Name} | {Author} | {SkinHash.ToString()}>";
+            return $"<CustomSkin: {Character} | {ModelVariant} | {Name} | {Author} | {SkinHash.ToString()}>";
         }
-    }
-
-    public enum ModelVariant
-    {
-        None,
-        Default,
-        Alternative,
-        DLC,
     }
 }

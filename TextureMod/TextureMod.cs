@@ -153,7 +153,7 @@ namespace TextureMod
             config.Bind("TextureChanger", "rt_skin_edit_header", "Real-time Skin editing:", new ConfigDescription("", null, "modmenu_header"));
             reloadCustomSkin = config.Bind<KeyCode>("TextureChanger", "reloadCustomSkin", KeyCode.F5);
             reloadEntireSkinLibrary = config.Bind<KeyCode>("TextureChanger", "reloadEntireSkinLibrary", KeyCode.F9);
-            reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", true);
+            reloadCustomSkinOnInterval = config.Bind<bool>("TextureChanger", "reloadCustomSkinOnInterval", false);
             skinReloadIntervalInFrames = config.Bind<int>("TextureChanger", "skinReloadIntervalInFrames", 60);
             config.Bind("TextureChanger", "gap2", 20, new ConfigDescription("", null, "modmenu_gap"));
 
