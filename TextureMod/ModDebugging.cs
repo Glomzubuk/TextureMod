@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TextureMod
@@ -18,7 +16,7 @@ namespace TextureMod
 
         private void OnGUI()
         {
-            if (TextureMod.Instance.tc.showDebugInfo)
+            if (TextureMod.showDebugInfo.Value)
             {
 
                 GUIStyle ss = new GUIStyle("Box");
