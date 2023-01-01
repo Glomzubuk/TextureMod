@@ -39,6 +39,8 @@ namespace TextureMod
 
         public static byte[] OnSendPayload(PlayerLobbyState pls)
         {
+            if (!TextureMod.sendSkinsToOpponents.Value) return null;
+
             TexModPlayer tmPlayer = TexModPlayerManager.GetPlayer(pls.playerNr);
             TextureMod.Log.LogDebug("Test: " + pls.ToString());
             if (tmPlayer.Player.isLocal)
@@ -66,6 +68,8 @@ namespace TextureMod
             int hashLength = br.ReadByte();
             if (hashLength == 0) return;
             byte[] rawHash = br.ReadBytes(hashLength);
+
+            if (!TextureMod.receiveSkinsFromOpponents.Value) return;
 
             try
             {

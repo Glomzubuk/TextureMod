@@ -127,7 +127,8 @@ namespace TextureMod
         public static ConfigEntry<KeyCode> reloadCustomSkin;
         public static ConfigEntry<KeyCode> reloadEntireSkinLibrary;
         public static ConfigEntry<bool> useOnlySetKey;
-        public static ConfigEntry<bool> neverApplyOpponentsSkin;
+        public static ConfigEntry<bool> sendSkinsToOpponents;
+        public static ConfigEntry<bool> receiveSkinsFromOpponents;
         public static ConfigEntry<bool> showDebugInfo;
         public static ConfigEntry<bool> lockButtonsOnRandom;
         public static ConfigEntry<bool> reloadCustomSkinOnInterval;
@@ -145,7 +146,8 @@ namespace TextureMod
             previousSkin = config.Bind<KeyCode>("TextureChanger", "previousSkin", KeyCode.Mouse1);
             cancelKey = config.Bind<KeyCode>("TextureChanger", "cancelKey", KeyCode.A);
             useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
-            neverApplyOpponentsSkin = config.Bind<bool>("TextureChanger", "neverApplyOpponentsSkin", false);
+            sendSkinsToOpponents = config.Bind<bool>("TextureChanger", "sendSkinsToOpponents", true);
+            receiveSkinsFromOpponents = config.Bind<bool>("TextureChanger", "receiveSkinsFromOpponents", true);
             lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
             assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
             config.Bind("TextureChanger", "gap1", 20, new ConfigDescription("",null,"modmenu_gap"));
