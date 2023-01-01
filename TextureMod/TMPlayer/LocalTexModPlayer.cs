@@ -55,9 +55,7 @@ namespace TextureMod.TMPlayer
                             opponentCustomTexture = TextureHelper.LoadPNG(opponentSkinPath);
                             setAntiMirrior = false;
                         }
-                        */
-                    bool isRandom = false;
-                        /*
+                        bool isRandom = false;
                         if (this.Player.CharacterSelectedIsRandom) // Randomize skin and char
                         {
                             //Creats a list of characters that have no skins and should be excluded from the character randomizer

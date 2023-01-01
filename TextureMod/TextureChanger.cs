@@ -115,9 +115,8 @@ namespace TextureMod
 
         private void GetSkinForUnlocksModel(ScreenUnlocksCharacters screen, sbyte next = 0)
         {
-            Traverse tv_previewModel = Traverse.Create(screen.previewModel);
-            Character character = tv_previewModel.Field<Character>("character").Value;
-            CharacterVariant characterVariant = tv_previewModel.Field<CharacterVariant>("characterVariant").Value;
+            Character character = screen.previewModel.character;
+            CharacterVariant characterVariant = screen.previewModel.characterVariant;
 
             List <CustomSkinHandler> customSkins = SkinsManager.skinCache[character];
             if (customSkins.Count == 0)
@@ -134,7 +133,7 @@ namespace TextureMod
         private void SetSkinForUnlocksModel(ScreenUnlocksSkins screenUnlocksSkins, sbyte next = 0)
         {
 
-            Character susCharacter = Traverse.Create(screenUnlocksSkins).Field<Character>("character").Value;
+            Character susCharacter = screenUnlocksSkins.character;
             List<CustomSkinHandler> customSkins = SkinsManager.skinCache[susCharacter];
             if (customSkins.Count == 0)
             {
