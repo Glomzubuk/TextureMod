@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Multiplayer;
 using BepInEx.Logging;
+using LLHandlers;
 using LLBML;
 using LLBML.Players;
 using LLBML.GameEvents;
+using LLBML.States;
+using LLBML.Networking;
 
 namespace TextureMod.TMPlayer
 {
@@ -14,6 +16,8 @@ namespace TextureMod.TMPlayer
     {
         public static TexModPlayerManager Instance { get; private set; }
         private static ManualLogSource Logger => TextureMod.Log;
+
+        private static int reloadCustomSkinTimer = 0;
 
         public List<TexModPlayer> tmPlayers = new List<TexModPlayer>(new TexModPlayer[Player.MAX_PLAYERS]);
         public List<RemoteTexModPlayer> Opponents
@@ -53,11 +57,7 @@ namespace TextureMod.TMPlayer
                 {
                     tmPlayers[p.nr] = new RemoteTexModPlayer(p);
                 }
-            });/*
-            ForAllRemoteTexmodPlayers((TexModPlayer tmp) =>
-            {
-                ExchangeClient.SendSkinCheck(tmp.Player.nr);
-            });*/
+            });
         }
 
         void Update()
@@ -82,6 +82,9 @@ namespace TextureMod.TMPlayer
                 }
             }
             UpdatePlayers();
+
+
+            CheckForSkinReload();
         }
 
         private void UpdatePlayers()
@@ -148,6 +151,46 @@ namespace TextureMod.TMPlayer
             {
                 if (tmPlayer.Player.IsInMatch) action(tmPlayer);
             }
+        }
+
+        private void CheckForSkinReload()
+        {
+
+            if (Input.GetKeyDown(TextureMod.reloadCustomSkin.Value))
+            {
+                ReloadCurrentSkins();
+            }
+            else if (TextureMod.reloadCustomSkinOnInterval.Value)
+            {
+                if (!NetworkApi.IsOnline)
+                {
+                    if (reloadCustomSkinTimer > 0)
+                    {
+                        reloadCustomSkinTimer--;
+                    }
+                    else
+                    {
+                        ReloadCurrentSkins();
+                        reloadCustomSkinTimer = TextureMod.skinReloadIntervalInFrames.Value;
+                    }
+                }
+            }
+        }
+
+
+        public static bool InPostGame()
+        {
+            return (StateApi.CurrentGameMode == GameMode._1v1 || StateApi.CurrentGameMode == GameMode.FREE_FOR_ALL || StateApi.CurrentGameMode == GameMode.COMPETITIVE)
+                && GameStates.GetCurrent() == GameState.GAME_RESULT;
+        }
+
+        public static void ReloadCurrentSkins()
+        {
+            ForAllLocalTexmodPlayers((tmp) =>
+            {
+                try { tmp?.skinHandler?.ReloadSkin(); }
+                catch { AudioHandler.PlaySfx(Sfx.MENU_BACK); }
+            });
         }
     }
 }

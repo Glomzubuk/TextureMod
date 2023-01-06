@@ -51,15 +51,16 @@ namespace TextureMod.CustomSkins
 
         public void ReloadSkin()
         {
-            if (InMemory)
+            if (!InMemory)
             {
                 Logger.LogInfo($"Loading Texture at: {FileLocation}");
                 this.CustomSkin.SetTexture(TextureUtils.LoadPNG(FileLocation));
             }
+            /*
             else
             {
                 throw new FileNotFoundException($"Skin '{this.CustomSkin.Name}' doesn't have a file registered");
-            }
+            }*/
         }
 
         public void SaveToDisk(string newFilePath = null)

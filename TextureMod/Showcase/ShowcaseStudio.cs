@@ -204,7 +204,7 @@ namespace TextureMod.Showcase
             {
                 ShowcaseSkinSelection.Update();
 
-                if (RefreshMode && refreshTimer < 0)
+                if (RefreshMode && refreshTimer <= 0)
                 {
                     skinHandler?.ReloadSkin();
                     refreshTimer = TextureMod.skinReloadIntervalInFrames.Value;
