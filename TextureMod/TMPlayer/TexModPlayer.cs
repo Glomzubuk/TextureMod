@@ -14,7 +14,6 @@ namespace TextureMod.TMPlayer
     {
         protected static BepInEx.Logging.ManualLogSource Logger => TextureMod.Log;
         private Vector3 labelScreenPos;
-        private int refreshTimer;
 
         public TexModPlayer(Player player, CustomSkin skin = null)
         {
@@ -98,7 +97,6 @@ namespace TextureMod.TMPlayer
                     case Character.SKATE: EffectsHandler.JetIngameEffects(this); break;
                 }
             }
-            refreshTimer--;
         }
 
         public void OnGUI()
