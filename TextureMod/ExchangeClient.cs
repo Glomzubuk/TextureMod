@@ -145,7 +145,6 @@ namespace TextureMod
                 };
                 //TODO Load skin in cache
                 SkinsManager.skinCache.Add(receivedSkinHandler.CustomSkin.Character, receivedSkinHandler);
-                TextureMod.Instance.tc.debug[3] = "Got non null skin and set should refresh to true";
                 TexModPlayer player = TexModPlayerManager.Instance.tmPlayers[sender.nr];
                 player.SetCustomSkin(receivedSkinHandler);
             }

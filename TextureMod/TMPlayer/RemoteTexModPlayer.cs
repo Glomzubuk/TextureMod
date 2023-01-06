@@ -6,7 +6,7 @@ namespace TextureMod.TMPlayer
 {
     public class RemoteTexModPlayer : TexModPlayer
     {
-        public RemoteTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) : base(player, skin, model)
+        public RemoteTexModPlayer(Player player, CustomSkin skin = null) : base(player, skin)
         {
         }
 
@@ -14,11 +14,11 @@ namespace TextureMod.TMPlayer
         {
             base.Update();
 
-            if (this.Player != null && this.characterModel != null)
-            {
-                Character modelCharacter = characterModel.character;
-                CharacterVariant modelCharacterVariant = characterModel.characterVariant;
-                /*
+            if (this.Player != null && this.ModelHandler != null)
+            { /*
+                Character modelCharacter = ModelHandler.character;
+                CharacterVariant modelCharacterVariant = ModelHandler.characterVariant;
+               
                 if (
                     (modelCharacter != customSkin.Character || modelCharacterVariant != customSkin.CharacterVariant) &&
                     (Player.CharacterSelected != Character.NONE || Player.CharacterVariant != CharacterVariant.CORPSE))

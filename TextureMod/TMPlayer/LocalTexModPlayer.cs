@@ -23,8 +23,8 @@ namespace TextureMod.TMPlayer
         public static int localPlayerNr => P2P.localPeer?.playerNr ?? 0;
 
         public int skinIndex = -1;
-        public LocalTexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null) 
-            : base(player, skin ?? CheckForStoredSkin(player), model)
+        public LocalTexModPlayer(Player player, CustomSkin skin = null) 
+            : base(player, skin ?? CheckForStoredSkin(player))
         {
         }
 

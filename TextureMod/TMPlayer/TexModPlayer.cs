@@ -15,17 +15,15 @@ namespace TextureMod.TMPlayer
         protected static BepInEx.Logging.ManualLogSource Logger => TextureMod.Log;
         private Vector3 labelScreenPos;
 
-        public TexModPlayer(Player player, CustomSkin skin = null, CharacterModel model = null)
+        public TexModPlayer(Player player, CustomSkin skin = null)
         {
             this.Player = player;
             this.skinHandler = new CustomSkinHandler(skin);
-            this.characterModel = model ?? GetCurrentCharacterModelFor(this.Player.nr);
-
         }
         public Player Player { get; protected set; }
         public PlayerEntity PlayerEntity => Player?.playerEntity;
 
-        public CharacterModel characterModel = null;
+        public ModelHandler ModelHandler = null;
 
         public CustomSkinHandler skinHandler = null;
         public bool HasCustomSkin() => skinHandler?.CustomSkin != null;
@@ -35,7 +33,7 @@ namespace TextureMod.TMPlayer
             get
             {
                 if (SkinColorOverride == SkinColorFilter.NONE)
-                    return CustomSkin.Texture;
+                    return CustomSkin?.Texture;
                 else
                     return Texture;
             }
@@ -60,39 +58,26 @@ namespace TextureMod.TMPlayer
 
         public virtual void Update()
         {
-            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
-            if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || !VariantHelper.VariantMatch(this.Player.CharacterVariant, this.CustomSkinModelVariant)))
+            if (this.Player.playerStatus != PlayerStatus.NONE)
             {
-                if (ShouldRefreshSkin)
-                {
-                    this.Player.CharacterSelected = this.CustomSkinCharacter;
-                    this.Player.CharacterVariant = VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant);
-                    GameStatesLobbyUtils.RefreshLocalPlayerState();
-               
-                }
-                else
-                {
-                    RemoveCustomSkin();
-                }
+                UpdateModel();
             }
-
-            if (screenZero?.screenType == ScreenType.GAME_RESULTS)
-            {
-                PostScreen postScreen = screenZero as PostScreen;
-                if (CustomSkin != null) // postScreen.winner.nr
-                {
-
-                    if (postScreen.winner.CJFLMDNNMIE == this.Player.nr) // postScreen.winner.nr
-                    {
-                        AssignSkinToWinnerModel(postScreen);
-                    }
-                    AssignTextureToPostGameHud(postScreen);
-                }
-            }
-
             if (GameStates.IsInLobby())
             {
-                if (screenZero is ScreenPlayers sp)
+                if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || !VariantHelper.VariantMatch(this.Player.CharacterVariant, this.CustomSkinModelVariant)))
+                {
+                    if (ShouldRefreshSkin)
+                    {
+                        this.Player.CharacterSelected = this.CustomSkinCharacter;
+                        this.Player.CharacterVariant = VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant);
+                        GameStatesLobbyUtils.RefreshLocalPlayerState();
+                    }
+                    else
+                    {
+                        RemoveCustomSkin();
+                    }
+                }
+                if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
                 {
                     Camera cam = Camera.main;
                     PlayersSelection ps = sp.playerSelections[Player.nr];
@@ -100,19 +85,9 @@ namespace TextureMod.TMPlayer
                     labelScreenPos = cam.WorldToScreenPoint(btTeamTr.position);
                     labelScreenPos.y -= btTeamTr.rect.height;
                 }
-
-                this.characterModel?.SetSilhouette(false);
-                if (HasCustomSkin())
-                {
-                    AssignTextureToCharacterModelRenderers();
-                }
-
-
             }
             else if (GameStates.IsInMatch() && HasCustomSkin() && PlayerEntity != null && Player.IsInMatch)
             {
-                AssignTextureToIngameCharacter();
-                AssignTextureToHud();
                 switch (this.Player.Character)
                 {
                     case Character.CANDY: EffectsHandler.CandymanIngameEffects(this); break;
@@ -124,19 +99,14 @@ namespace TextureMod.TMPlayer
             }
 
         }
-        public void FixedUpdate()
-        {
-        }
 
         public void OnGUI()
         {
             if (GameStates.IsInLobby())
             {
-                this.characterModel?.SetSilhouette(false);
                 if (HasCustomSkin())
                 {
                     ShowSkinNametags();
-                    AssignTextureToCharacterModelRenderers();
                 }
             }
         }
@@ -148,40 +118,15 @@ namespace TextureMod.TMPlayer
 
         public void UpdateModel()
         {
-            this.characterModel = GetCurrentCharacterModelFor(this.Player.nr);
+            if (ModelHandler == null || ModelHandler.IsObsolete() || !ModelHandler.ValidCharacter(this.Player.Character, this.Player.CharacterVariant))
+            {
+                this.ModelHandler = ModelHandler.GetCurrentModelHandler(this.Player.nr);
+            }
 
-
-            this.characterModel?.SetSilhouette(false);
-            if (this.CustomSkin != null)
+            if (ModelHandler != null)
             {
-                AssignTextureToCharacterModelRenderers();
-            }
-        }
-        private static CharacterModel GetCurrentCharacterModelFor(int playerNr)
-        {
-            ScreenBase screenZero = ScreenApi.CurrentScreens[0];
-            ScreenBase screenOne = ScreenApi.CurrentScreens[1];
-
-            if (screenZero?.screenType == ScreenType.PLAYERS)
-            {
-                var screenPlayers = screenZero as ScreenPlayers;
-                return screenPlayers.playerSelections[playerNr].characterModel;
-            }
-            else if (screenOne?.screenType == ScreenType.UNLOCKS_SKINS)
-            {
-                var screenUnlocksSkins = screenOne as ScreenUnlocksSkins;
-                return screenUnlocksSkins.previewModel;
-            }
-            else if (screenOne?.screenType == ScreenType.UNLOCKS_CHARACTERS)
-            {
-                var screenUnlocksCharacters = screenOne as ScreenUnlocksCharacters;
-                return screenUnlocksCharacters.previewModel;
-            }
-            else
-            {
-                TextureMod.Log.LogWarning("Got request for character model in an unsupported screen.\n - Screen[0].type: " + screenZero?.screenType.ToString() +
-                    "\n - CurrentScreens[1].type: " + screenOne?.screenType.ToString());
-                return null;
+                this.ModelHandler.Update();
+                this.ModelHandler.texture = Texture;
             }
         }
 
@@ -219,47 +164,11 @@ namespace TextureMod.TMPlayer
                 foreach (CharacterModel cm in cms)
                 {
                     cm.SetSilhouette(false);
-                    RendererHelper.AssignTextureToCharacterModelRenderers(cm, this.PlayerEntity, this.Texture);
+                    RendererHelper.AssignTextureToCharacterModelRenderers(cm, this.PlayerEntity.character, this.PlayerEntity.variant, this.Texture);
                 }
             }
         }
 
-        private void SetCharacterModelTex()
-        {
-            this.characterModel.SetSilhouette(false);
-            this.AssignTextureToCharacterModelRenderers();
-        }
-
-
-        private void AssignTextureToIngameCharacter()
-        {
-            RendererHelper.AssignTextureToIngameCharacter(this.PlayerEntity, this.Texture);
-        }
-        private void AssignSkinToWinnerModel(PostScreen postScreen)
-        {
-            RendererHelper.AssignSkinToWinnerModel(postScreen, this.PlayerEntity, this.Texture);
-        }
-        private void AssignTextureToPostGameHud(PostScreen postScreen)
-        {
-            RendererHelper.AssignTextureToPostGameHud(postScreen, this.Texture, this.Player.nr);
-        }
-        private void AssignTextureToHud()
-        {
-            RendererHelper.AssignTextureToHud(this.Texture, this.PlayerEntity);
-        }
-        private void AssignTextureToCharacterModelRenderers()
-        {
-            if (this.characterModel == null) return;
-            if (this.PlayerEntity != null)
-            {
-                RendererHelper.AssignTextureToCharacterModelRenderers(this.characterModel, this.PlayerEntity, this.Texture);
-            }
-            else
-            {
-                RendererHelper.AssignTextureToCharacterModelRenderers(this.characterModel, this.Player.Character, this.Player.CharacterVariant, this.Texture);
-            }
-
-        }
 
         public void SetCustomSkin(CustomSkinHandler skinHandler)
         {
@@ -270,8 +179,11 @@ namespace TextureMod.TMPlayer
                 SetCharacter(CustomSkin.Character, VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant));
             //}
             bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
-            this.UpdateModel();
-            this.characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
+
+            if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
+            {
+                sp.playerSelections[this.Player.nr].characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
+            }
             GameStatesLobbyUtils.RefreshPlayerState(this.Player);
         }
 
@@ -330,28 +242,7 @@ namespace TextureMod.TMPlayer
 
                     GUI.Box(labelBox, labelTxt);
                 }
-
-                //TODO move that stuff elsewhere, it's for the showcase, which shouldn' t use texmodplayer
-                if (screenOne != null)
-                {
-                    if (screenOne.screenType == ScreenType.UNLOCKS_SKINS)
-                    {
-                        if (TextureMod.Instance.showcaseStudio.showUI == false)
-                        {
-                            TextureMod.Instance.showcaseStudio.skinName = labelTxt;
-                            //TODO move that in localTexModPlayer
-                            //TextureMod.Instance.showcaseStudio.refreshTimer = reloadCustomSkinTimer;
-                            //TextureMod.Instance.showcaseStudio.refreshMode = intervalMode;
-                        }
-                        else
-                        {
-                            //TODO move that in localTexModPlayer
-                            //if (intervalMode) GUI.Box(new Rect((Screen.width - (Screen.width / 3.55f)) - (GUI.skin.box.CalcSize(content).x / 2), Screen.height - (Screen.height / 23), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt + " (Refresh " + "[" + reloadCustomSkinTimer + "]" + ")");
-                            //else GUI.Box(new Rect((Screen.width - (Screen.width / 3.55f)) - (GUI.skin.box.CalcSize(content).x / 2), Screen.height - (Screen.height / 23), GUI.skin.box.CalcSize(content).x, GUI.skin.box.CalcSize(content).y), labelTxt);
-                        }
-                    }
-                }
-            }  //Show skin nametags
+            }
         }
     }
     public enum SkinColorFilter

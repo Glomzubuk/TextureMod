@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using GameplayEntities;
+using LLScreen;
+using LLBML;
 using LLBML.Players;
 using LLBML.Utils;
 using HarmonyLib;
@@ -9,144 +11,61 @@ namespace TextureMod
 {
     public static class RendererHelper
     {
-        private static AccessTools.FieldRef<GameHudPlayerInfo, ALDOKEMAOMB> shownPlayerField = AccessTools.FieldRefAccess<GameHudPlayerInfo, ALDOKEMAOMB>("shownPlayer");
-
-
         public static void AssignTextureToHud(Texture2D texture, PlayerEntity playerEntity)
         {
-            GameHudPlayerInfo[] ghpis = UnityEngine.Object.FindObjectsOfType<GameHudPlayerInfo>();
-            if (ghpis.Length > 0)
+            if (ScreenApi.CurrentScreens[0] is ScreenGameHud sgh)
             {
-                foreach (GameHudPlayerInfo ghpi in ghpis)
+                Player p = playerEntity.player;
+                GameHudPlayerInfo ghpi = sgh.playerInfos[p.nr];
+
+                Renderer[] rs = ghpi.gameObject.transform.GetComponentsInChildren<Renderer>();
+                foreach (Renderer r in rs)
                 {
-                    //ALDOKEMAOMB shownPlayer = Traverse.Create(ghpi).Field<ALDOKEMAOMB>("shownPlayer").Value;
-                    ALDOKEMAOMB shownPlayer = shownPlayerField.Invoke(ghpi);
-                    if (shownPlayer == playerEntity.player)
-                    {
-                        Renderer[] rs = ghpi.gameObject.transform.GetComponentsInChildren<Renderer>();
-                        if (rs.Length > 0)
-                        {
-                            foreach (Renderer r in rs)
-                            {
-                                RendererHelper.AssignTextureToRenderer(r, texture, playerEntity.character, playerEntity.variant);
-                            }
-                        }
-                    }
+                    RendererHelper.AssignTextureToRenderer(r, texture, playerEntity.character, playerEntity.variant);
                 }
             }
         }
 
         public static void AssignTextureToIngameCharacter(PlayerEntity playerEntity, Texture2D texture)
         {
-            VisualEntity ve = playerEntity?.gameObject?.GetComponent<VisualEntity>();
-            if (ve != null)
+            foreach (Renderer r in playerEntity.skinRenderers)
             {
-                if (ve.skinRenderers.Count > 0)
-                {
-                    foreach (Renderer r in ve.skinRenderers)
-                    {
-                        AssignTextureToRenderer(r, texture, playerEntity);
-                    }
-
-                    if (playerEntity.character == Character.GRAF)
-                    {
-                        EffectsHandler.AssignToxicEffectColors(playerEntity.player.CJFLMDNNMIE, texture, playerEntity.variant);
-                    }
-                }
+                AssignTextureToRenderer(r, texture, playerEntity.character, playerEntity.variant);
             }
-            else
+
+            if (playerEntity.character == Character.GRAF)
             {
-                TextureMod.Log.LogError($"Null ref test: pe {playerEntity == null}, tex {texture == null}, ve {ve == null}");
-                DebugUtils.PrintStacktrace();
+                EffectsHandler.AssignToxicEffectColors(playerEntity.player.CJFLMDNNMIE, texture, playerEntity.variant);
             }
         }
 
         public static void AssignSkinToWinnerModel(PostScreen postScreen, PlayerEntity playerEntity, Texture2D texture)
         {
-            AssignTextureToCharacterModelRenderers(postScreen.winnerModel, playerEntity, texture);
+            AssignTextureToCharacterModelRenderers(postScreen.winnerModel, playerEntity.character, playerEntity.variant, texture);
         }
 
 
         public static void AssignTextureToPostGameHud(PostScreen postScreen, Texture2D texture, int playerNr)
         {
-            Renderer[] rs = postScreen.playerBarsByPlayer[playerNr].gameObject.transform.GetComponentsInChildren<Renderer>();
+            Player player = Player.GetPlayer(playerNr);
+            PostSceenPlayerBar playerBar = postScreen.playerBarsByPlayer[playerNr];
 
-            for (int i = 0; i < rs.Length; i++)
+            Renderer[] rs = playerBar.gameObject.transform.GetComponentsInChildren<Renderer>();
+
+            foreach (Renderer r in rs)
             {
-                RendererHelper.AssignTextureToRenderer(rs[i], texture, playerNr);
+                RendererHelper.AssignTextureToRenderer(r, texture, player.Character, player.CharacterVariant);
             }
         }
 
-        public static void AssignTextureToCharacterModelRenderers(CharacterModel model, PlayerEntity playerEntity, Texture2D texture)
-        {
-            
-            Renderer[] rs = model.curModel?.transform.GetComponentsInChildren<Renderer>() ?? new Renderer[0];
-            for (int i = 0; i < rs.Length; i++)
-            {
-                RendererHelper.AssignTextureToRenderer(rs[i], texture, playerEntity);
-            }
-        }
 
         public static void AssignTextureToCharacterModelRenderers(CharacterModel model, Character character, CharacterVariant variant, Texture2D texture)
         {
-
             Renderer[] rs = model.curModel?.transform.GetComponentsInChildren<Renderer>() ?? new Renderer[0];
             for (int i = 0; i < rs.Length; i++)
             {
                 RendererHelper.AssignTextureToRenderer(rs[i], texture, character, variant);
             }
-        }
-
-        public static void AssignTextureToRenderer(Renderer r, Texture2D texture, int playerNr = -1)
-        {
-            Character character = Character.NONE;
-            CharacterVariant characterVariant = CharacterVariant.DEFAULT;
-            PlayerEntity playerEntity = r.transform.GetComponentInParent<PlayerEntity>();
-
-            if (playerEntity != null)
-            {
-                character = playerEntity.character;
-                characterVariant = playerEntity.variant;
-            }
-            else
-            {
-                GameHudPlayerInfo playerHud = r.transform.GetComponentInParent<GameHudPlayerInfo>();
-                if (playerHud != null)
-                {
-                    Player shownPlayer = Traverse.Create(playerHud).Field<ALDOKEMAOMB>("shownPlayer").Value;
-                    character = shownPlayer.CharacterSelected;
-                    characterVariant = shownPlayer.CharacterVariant;
-                }
-                else
-                {
-                    CharacterModel characterModel = r.transform.GetComponentInParent<CharacterModel>();
-                    if (characterModel != null)
-                    {
-                        Traverse tv_charModel = Traverse.Create(characterModel);
-                        character = tv_charModel.Field<Character>("character").Value;
-                        characterVariant = tv_charModel.Field<CharacterVariant>("characterVariant").Value;
-                    }
-                    else
-                    {
-                        if (playerNr > -1)
-                        {
-                            Player player = Player.GetPlayer(playerNr);
-                            character = player.Character;
-                            characterVariant = player.CharacterVariant;
-                        }
-                        else
-                        {
-                            throw new MemberNotFoundException("Unable to determine character and variant");
-                        }
-                    }
-                }
-            }
-            AssignTextureToRenderer(r, texture, character, characterVariant);
-        }
-
-        public static void AssignTextureToRenderer(Renderer r, Texture2D texture, PlayerEntity playerEntity)
-        {
-            AssignTextureToRenderer(r, texture, playerEntity.character, playerEntity.variant);
         }
 
         public static void AssignTextureToRenderer(Renderer r, Texture2D texture, Character character, CharacterVariant characterVariant)

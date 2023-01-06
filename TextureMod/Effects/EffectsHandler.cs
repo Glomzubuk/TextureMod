@@ -370,11 +370,12 @@ namespace TextureMod
 
         public static void ToxicIngameEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null)
+            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null && tmPlayer.PlayerEntity.character == Character.GRAF)
             {
-                if (tmPlayer.PlayerEntity.character == Character.GRAF && tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
+                if (tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
                 {
                     AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.Texture);
+                    AssignToxicEffectColors(tmPlayer.Player.nr, tmPlayer.Texture, tmPlayer.Player.CharacterVariant);
                 }
             }
         }

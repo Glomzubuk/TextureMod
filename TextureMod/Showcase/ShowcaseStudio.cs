@@ -1,13 +1,15 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using LLHandlers;
 using LLScreen;
 using BepInEx.Configuration;
 using LLBML;
+using LLBML.States;
+using TextureMod.CustomSkins;
 
-namespace TextureMod
+
+namespace TextureMod.Showcase
 {
     public class ShowcaseStudio : MonoBehaviour
     {
@@ -17,10 +19,13 @@ namespace TextureMod
         private ConfigEntry<KeyCode> showcaseStudioMoveLight;
         private ConfigEntry<KeyCode> showcaseStudioMoveCamera;
 
+        public static ShowcaseStudio Instance { get; private set; }
         public bool showUI = true;
-        public string skinName = "N/A";
+        public string SkinName => CustomSkin?.Name ?? "N/A";
         public int refreshTimer = 0;
-        public bool refreshMode = false;
+        public bool RefreshMode => TextureMod.reloadCustomSkinOnInterval.Value;
+
+
         bool hideGUI = false;
         bool showControls = false;
         ScreenUnlocksSkins SUS;
@@ -30,6 +35,10 @@ namespace TextureMod
         Camera lightControllerCam;
         GameObject lightController;
         CharacterModel characterModel;
+
+        CustomSkinHandler skinHandler;
+        CustomSkin CustomSkin => skinHandler?.CustomSkin;
+        ModelHandler modelHandler;
         Shader mainShader = Shader.Find("LethalLeague/GameplayOpaque");
         Vector3 originalCharacterRendPos;
         bool enableLight = true;
@@ -48,6 +57,10 @@ namespace TextureMod
         float animationPos = 0;
         bool animate = true;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         private void Start()
         {
@@ -173,11 +186,15 @@ namespace TextureMod
             }
         }
 
+
+
         private void Update()
         {
-
             if (SUS == null)
             {
+                this.modelHandler = null;
+                this.characterModel = null;
+                this.skinHandler = null;
                 if (ScreenApi.CurrentScreens[1]?.screenType == ScreenType.UNLOCKS_SKINS)
                 {
                     SUS = ScreenApi.CurrentScreens[1] as ScreenUnlocksSkins;
@@ -185,6 +202,16 @@ namespace TextureMod
             }
             else
             {
+                ShowcaseSkinSelection.Update();
+
+                if (RefreshMode && refreshTimer < 0)
+                {
+                    skinHandler?.ReloadSkin();
+                    refreshTimer = TextureMod.skinReloadIntervalInFrames.Value;
+                }
+                refreshTimer--;
+
+                UpdateModel();
 
                 if (Input.GetKeyDown(showcaseStudioHideHud.Value)) hideGUI = !hideGUI;
 
@@ -225,6 +252,28 @@ namespace TextureMod
                 if (camControllerCam != null) camControllerCam.backgroundColor = new Color32(bgR, bgG, bgB, 255);
                 if (lightControllerCam != null) lightControllerCam.backgroundColor = new Color(0.5f, 0.5f, 0.5f);
             }
+        }
+
+        public void UpdateModel()
+        {
+            if (modelHandler == null || modelHandler.IsObsolete() || !modelHandler.ValidCharacter(this.SUS.previewModel.character, this.SUS.previewModel.characterVariant))
+            {
+                this.modelHandler = ModelHandler.GetCurrentModelHandler();
+            }
+
+            if (modelHandler != null)
+            {
+                this.modelHandler.Update();
+                this.modelHandler.texture = CustomSkin?.Texture;
+            }
+        }
+
+        public void SetCustomSkin(CustomSkinHandler skinHandler)
+        {
+            this.skinHandler = skinHandler;
+            if (this.CustomSkin == null) { return; }
+
+            GameStates.DirectProcess(Msg.SEL_SKIN, -1, (int)VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant));
         }
 
         private void FixedUpdate()
@@ -302,12 +351,12 @@ namespace TextureMod
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Skin Name: ");
-            GUILayout.Label(skinName);
+            GUILayout.Label(SkinName);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Skin Refresh: ");
-            if (!refreshMode) GUILayout.Label("Off");
+            if (!RefreshMode) GUILayout.Label("Off");
             else GUILayout.Label("On [" + refreshTimer.ToString() + "]");
             GUILayout.EndHorizontal();
 

@@ -6,6 +6,7 @@ using HarmonyLib;
 using LLBML.Players;
 using LLBML.States;
 using TextureMod.TMPlayer;
+using TextureMod.Showcase;
 
 namespace TextureMod
 {
@@ -49,6 +50,17 @@ namespace TextureMod
             return false;
         }
         */
+
+        [HarmonyPatch(typeof(OGKPCMDOMPF), nameof(OGKPCMDOMPF.ProcessMsg))]
+        [HarmonyPrefix]
+        public static bool GameStatesUnlocks_ProcessMsh_Prefix(JOFJHDJHJGI OHBPPCEFBHI, Message EIMJOIEPMNA)
+        {
+            if (!TextureMod.IsSkinKeyDown())
+            {
+                ShowcaseStudio.Instance.SetCustomSkin(null);
+            }
+            return true;
+        }
 
         [HarmonyPatch(typeof(PlayersSelection), "<Init>m__4")] // btSkin.onClick delegate in PlayersSelection.Init
         [HarmonyPrefix]

@@ -88,7 +88,7 @@ namespace TextureMod.TMPlayer
         {
             foreach (TexModPlayer tmPlayer in tmPlayers)
             {
-                tmPlayer.Update();
+                tmPlayer?.Update();
             }
         }
 
@@ -96,7 +96,7 @@ namespace TextureMod.TMPlayer
         {
             foreach (TexModPlayer tmPlayer in tmPlayers)
             {
-                tmPlayer.OnGUI();
+                tmPlayer?.OnGUI();
             }
         }
 

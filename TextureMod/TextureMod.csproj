@@ -108,9 +108,7 @@
     <Compile Include="CustomStyle.cs" />
     <Compile Include="ExchangeClient.cs" />
     <Compile Include="ModDebugging.cs" />
-    <Compile Include="ShowcaseStudio.cs" />
     <Compile Include="SmoothMouseLook.cs" />
-    <Compile Include="TextureChanger.cs" />
     <Compile Include="TextureMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PluginInfos.cs" />
@@ -128,6 +126,9 @@
     <Compile Include="CustomSkins\SkinHash.cs" />
     <Compile Include="CustomSkins\SkinsManager.cs" />
     <Compile Include="HarmonyPatches.cs" />
+    <Compile Include="Showcase\ShowcaseStudio.cs" />
+    <Compile Include="Showcase\ShowcaseSkinSelection.cs" />
+    <Compile Include="ModelHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -136,6 +137,7 @@
     <Folder Include="TMPlayer\" />
     <Folder Include="Effects\" />
     <Folder Include="CustomSkins\" />
+    <Folder Include="Showcase\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

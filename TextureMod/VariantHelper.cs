@@ -110,6 +110,46 @@ namespace TextureMod
         }
     }
 
+
+    /*
+    CharacterVariant GetCustomSkinVariant(ModelVariant variantType, CharacterVariant characterVariant)
+    {
+        switch (variantType)
+        {
+            case ModelVariant.Alternative:
+                if (characterVariant == CharacterVariant.MODEL_ALT || characterVariant == CharacterVariant.MODEL_ALT2)
+                {
+                    return characterVariant;
+                }
+                else if (opponentPlayer?.CharacterSelected == localLobbyPlayer.CharacterSelected)
+                {
+                    return opponentPlayer.CharacterVariant == CharacterVariant.MODEL_ALT ? CharacterVariant.MODEL_ALT2 : CharacterVariant.MODEL_ALT;
+                }
+                else return CharacterVariant.MODEL_ALT;
+            case ModelVariant.DLC:
+                if (characterVariant == CharacterVariant.MODEL_ALT3 || characterVariant == CharacterVariant.MODEL_ALT4)
+                {
+                    return characterVariant;
+                }
+                else if (opponentPlayer?.CharacterSelected == localLobbyPlayer.CharacterSelected)
+                {
+                    return opponentPlayer.CharacterVariant == CharacterVariant.MODEL_ALT3 ? CharacterVariant.MODEL_ALT4 : CharacterVariant.MODEL_ALT3;
+                }
+                else return CharacterVariant.MODEL_ALT3;
+            default:
+                if (characterVariant < CharacterVariant.STATIC_ALT)
+                {
+                    return characterVariant;
+                }
+                else if (opponentPlayer?.CharacterSelected == localLobbyPlayer.CharacterSelected)
+                {
+                    return opponentPlayer.CharacterVariant == CharacterVariant.DEFAULT ? CharacterVariant.ALT0 : CharacterVariant.DEFAULT;
+                }
+                else return CharacterVariant.DEFAULT;
+        }
+    }
+    */
+
     public enum ModelVariant
     {
         None,

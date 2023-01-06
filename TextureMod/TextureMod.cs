@@ -9,6 +9,7 @@ using BepInEx.Logging;
 using BepInEx.Configuration;
 using TextureMod.TMPlayer;
 using TextureMod.CustomSkins;
+using TextureMod.Showcase;
 
 
 namespace TextureMod
@@ -30,7 +31,6 @@ namespace TextureMod
         #region instances
         public static TextureMod Instance { get; private set; } = null;
         public static ManualLogSource Log { get; private set; } = null;
-        public TextureChanger tc = null;
         public TexModPlayerManager tmpl = null;
         public SkinsManager sm = null;
         public ModDebugging md = null;
@@ -88,7 +88,6 @@ namespace TextureMod
 
         private void Update()
         {
-            if (tc == null) { tc = gameObject.AddComponent<TextureChanger>(); }
             if (md == null) { md = gameObject.AddComponent<ModDebugging>(); }
             if (effectChanger == null) { effectChanger = gameObject.AddComponent<EffectChanger>(); }
             if (showcaseStudio == null) showcaseStudio = gameObject.AddComponent<ShowcaseStudio>();
