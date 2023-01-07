@@ -24,7 +24,7 @@ namespace TextureMod
         enum TexModMessages
         {
             TEXMOD_SKINCHECK = 4040,
-            TEXMOD_SKINCHANGE = 4041,
+            TEXMOD_SKINNOTICE = 4041,
             TEXMOD_SKINREQUEST = 4042,
             TEXMOD_SKIN = 4043,
         };
@@ -32,6 +32,7 @@ namespace TextureMod
         {
             var pInfo = TextureMod.Instance.Info;
             MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKINREQUEST, TexModMessages.TEXMOD_SKINREQUEST.ToString(), ReceiveSkinRequest);
+            MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKINNOTICE, TexModMessages.TEXMOD_SKINNOTICE.ToString(), ReceiveSkinNotice);
             MessageApi.RegisterCustomMessage(pInfo, (ushort)TexModMessages.TEXMOD_SKIN, TexModMessages.TEXMOD_SKIN.ToString(), ReceiveSkinFromMessage);
             PlayerLobbyState.RegisterPayload(pInfo, OnSendPayload, OnReceivePayload);
             NetworkApi.RegisterModPacketCallback(pInfo, OnReceiveModPacket);
@@ -64,7 +65,6 @@ namespace TextureMod
         public static void OnReceivePayload(PlayerLobbyState pls, byte[] payload)
         {
             BinaryReader br = new BinaryReader(new MemoryStream(payload));
-            TexModPlayer tmPlayer = TexModPlayerManager.GetPlayer(pls.playerNr);
             int hashLength = br.ReadByte();
             if (hashLength == 0) return;
             byte[] rawHash = br.ReadBytes(hashLength);
@@ -74,24 +74,44 @@ namespace TextureMod
             try
             {
                 SkinHash skinHash = new SkinHash(rawHash);
-                Logger.LogDebug($"Player {pls.playerNr} has custom skin: " + skinHash);
-                CustomSkinHandler handler = SkinsManager.skinCache.GetHandlerFromHash(skinHash);
-                if (handler != null)
-                {
-                    Logger.LogDebug($"Skin is known, applying." );
-                    tmPlayer.SetCustomSkin(handler);
-                    GameStatesLobbyUtils.RefreshPlayerState(tmPlayer.Player);
-                }
-                else
-                {
-                    Logger.LogDebug($"Skin is not known, requesting.");
-                    SendSkinRequest(tmPlayer.Player.nr, skinHash);
-                }
-    
+                ProcessSkinHash(pls.playerNr, skinHash);
             }
             catch (Exception e)
             {
                 Logger.LogError("Caught Exception trying to receive lobby state: " + e);
+            }
+        }
+
+        public static void SendSkinNotice(SkinHash skinHash)
+        {
+            TextureMod.Log.LogDebug("Sending skin notice for hash: " + skinHash);
+            P2P.SendOthers(new Message((Msg)TexModMessages.TEXMOD_SKINNOTICE, P2P.localPeer.playerNr, 0, skinHash.Bytes, skinHash.Bytes.Length));
+        }
+        public static void ReceiveSkinNotice(Message msg)
+        {
+            if (!TextureMod.receiveSkinsFromOpponents.Value) return;
+            if (msg.playerNr == P2P.localPeer.playerNr) return;
+
+            SkinHash skinHash = new SkinHash((byte[])msg.ob);
+            TextureMod.Log.LogDebug("Received skin notice for hash: " + skinHash);
+            ProcessSkinHash(msg.playerNr, skinHash);
+        }
+
+        private static void ProcessSkinHash(int fromNr, SkinHash skinHash)
+        {
+            TexModPlayer tmPlayer = TexModPlayerManager.GetPlayer(fromNr);
+            Logger.LogDebug($"Player {tmPlayer.Player.nr} has custom skin: " + skinHash);
+            CustomSkinHandler handler = SkinsManager.skinCache.GetHandlerFromHash(skinHash);
+            if (handler != null)
+            {
+                Logger.LogDebug($"Skin is known, applying.");
+                tmPlayer.SetCustomSkin(handler);
+                GameStatesLobbyUtils.RefreshPlayerState(tmPlayer.Player);
+            }
+            else
+            {
+                Logger.LogDebug($"Skin is not known, requesting.");
+                SendSkinRequest(tmPlayer.Player.nr, skinHash);
             }
         }
 
