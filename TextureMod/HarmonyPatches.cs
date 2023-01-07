@@ -170,5 +170,10 @@ namespace TextureMod
             }
         }
     }
+
+    public static class RandomSkinSelect_Patches
+    {
+
+    }
 }
 
