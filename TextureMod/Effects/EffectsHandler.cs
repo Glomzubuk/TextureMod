@@ -375,8 +375,8 @@ namespace TextureMod
                 if (tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
                 {
                     AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.Texture);
-                    AssignToxicEffectColors(tmPlayer.Player.nr, tmPlayer.Texture, tmPlayer.Player.CharacterVariant);
                 }
+                AssignToxicEffectColors(tmPlayer.Player.nr, tmPlayer.Texture, tmPlayer.Player.CharacterVariant);
             }
         }
 
