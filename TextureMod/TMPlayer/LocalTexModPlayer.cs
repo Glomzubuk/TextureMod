@@ -192,26 +192,20 @@ namespace TextureMod.TMPlayer
 
         public void ChangeSkin(Character character, int index, bool random = false)
         {
-            if (Player.CharacterSelectedIsRandom)
-            {
+            // TODO Improve that
+            List<CustomSkinHandler> skins = SkinsManager.skinCache.GetUsableHandlers(character);
+            if (skins == null) return;
 
-            }
-            else
+            Logger.LogDebug($"Counter: {skinCounter}, skin length: {skins.Count}");
+            if (skins.Count > 0)
             {
-                // TODO Improve that
-                List<CustomSkinHandler> skins = SkinsManager.skinCache.GetUsableHandlers(character);
-                if (skins == null) return;
-
-                Logger.LogDebug($"Counter: {skinCounter}, skin length: {skins.Count}");
-                if (skins.Count > 0)
+                this.SetCustomSkin(skins?[mod(index, skins.Count)]);
+                if (GameStates.IsInOnlineLobby())
                 {
-                    this.SetCustomSkin(skins?[mod(index, skins.Count)]);
-                    if (GameStates.IsInOnlineLobby())
-                    {
-                        GameStatesLobbyUtils.SendPlayerState(this.Player);
-                    }
+                    GameStatesLobbyUtils.SendPlayerState(this.Player);
                 }
             }
+        
         }
         private int mod(int x, int m)
         {

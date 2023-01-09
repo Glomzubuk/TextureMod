@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using GameplayEntities;
 using LLScreen;
@@ -58,23 +60,22 @@ namespace TextureMod.TMPlayer
 
         public virtual void Update()
         {
-            if (this.Player.playerStatus != PlayerStatus.NONE)
+            if (this.Player.playerStatus == PlayerStatus.NONE)
             {
-                UpdateModel();
+                if (HasCustomSkin()) RemoveCustomSkin();
+                return;
             }
+            if (HasCustomSkin()) UpdateModel();
             if (GameStates.IsInLobby())
             {
-                if (this.CustomSkin != null && (this.Player.CharacterSelected != this.CustomSkinCharacter || !VariantHelper.VariantMatch(this.Player.CharacterVariant, this.CustomSkinModelVariant)))
+                if (HasCustomSkin())
                 {
-                    if (ShouldRefreshSkin)
+                    bool skinMismatch = !this.Player.CharacterSelectedIsRandom && (this.Player.CharacterSelected != this.CustomSkinCharacter || !VariantHelper.VariantMatch(this.Player.CharacterVariant, this.CustomSkinModelVariant));
+                    if (ShouldRefreshSkin && skinMismatch)
                     {
                         this.Player.CharacterSelected = this.CustomSkinCharacter;
                         this.Player.CharacterVariant = VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant);
                         GameStatesLobbyUtils.RefreshLocalPlayerState();
-                    }
-                    else
-                    {
-                        RemoveCustomSkin();
                     }
                 }
                 if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
@@ -117,15 +118,28 @@ namespace TextureMod.TMPlayer
 
         public void UpdateModel()
         {
-            if (ModelHandler == null || ModelHandler.IsObsolete() || !ModelHandler.ValidCharacter(this.Player.Character, this.Player.CharacterVariant))
+
+            bool differentModel = ModelHandler != null && !ModelHandler.ValidCharacter(this.Player.Character, this.Player.CharacterVariant);
+            if (ModelHandler == null || ModelHandler.IsObsolete() || (GameStates.IsInLobby() && differentModel ))
             {
+                string debugstring = $"TmPlayer {this.Player.nr} is updating their modelhandler. " +
+                    $"It was {(ModelHandler == null ? "null" : "not null")}.";
+                if (ModelHandler != null)
+                {
+                    debugstring += $" It {(ModelHandler.IsObsolete() ? "was" : "wasn't")} obsolete.";
+                }
+                if (differentModel)
+                {
+                    debugstring += $" It had the wrong model.";
+                }
+                Logger.LogDebug(debugstring);
                 this.ModelHandler = ModelHandler.GetCurrentModelHandler(this.Player.nr);
             }
 
             if (ModelHandler != null)
             {
-                this.ModelHandler.Update();
                 this.ModelHandler.texture = Texture;
+                this.ModelHandler.Update();
             }
         }
 
@@ -149,11 +163,8 @@ namespace TextureMod.TMPlayer
                         Texture = EffectsHandler.GetColoredCopy(CustomSkin.Texture, new Color(0, 255, 255)); break;
                 }
                 SkinColorOverride = filter;
-                this.ShouldRefreshSkin = true;
             }
         }
-
-
 
         private void SetUnlocksCharacterModel(Texture2D tex)
         {
@@ -177,13 +188,34 @@ namespace TextureMod.TMPlayer
             //{
                 SetCharacter(CustomSkin.Character, VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant));
             //}
-            bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
 
-            if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
+            if (GameStates.IsInLobby())
             {
-                sp.playerSelections[this.Player.nr].characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
+                bool flipped = StateApi.CurrentGameMode == GameMode._1v1 && this.Player.nr == 1;
+
+                if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
+                {
+                    sp.playerSelections[this.Player.nr].characterModel.SetCharacterLobby(this.Player.nr, this.Player.Character, this.Player.CharacterVariant, flipped);
+                }
+                GameStatesLobbyUtils.RefreshPlayerState(this.Player);
             }
-            GameStatesLobbyUtils.RefreshPlayerState(this.Player);
+        }
+
+        public void SetRandomCustomSkin()
+        {
+            List<CustomSkinHandler> skins = SkinsManager.skinCache.GetUsableHandlers(this.Player.Character);
+            if (skins == null) return;
+            List<CustomSkinHandler> validSkins = skins.Where((skinHandler) => {
+                return VariantHelper.VariantMatch(this.Player.CharacterVariant, skinHandler.CustomSkin.ModelVariant);
+            }).ToList();
+            if (validSkins.Count > 0)
+            {
+                this.SetCustomSkin(validSkins[UnityEngine.Random.Range(0, validSkins.Count)]);
+                if (GameStates.IsInOnlineLobby())
+                {
+                    GameStatesLobbyUtils.SendPlayerState(this.Player);
+                }
+            }
         }
 
         public void RemoveCustomSkin()

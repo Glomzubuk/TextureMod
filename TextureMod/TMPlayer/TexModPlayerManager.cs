@@ -9,6 +9,7 @@ using LLBML.Players;
 using LLBML.GameEvents;
 using LLBML.States;
 using LLBML.Networking;
+using TextureMod.CustomSkins;
 
 namespace TextureMod.TMPlayer
 {
@@ -37,12 +38,14 @@ namespace TextureMod.TMPlayer
         {
             Instance = this;
             LobbyEvents.OnLobbyReady += LobbyEvents_OnLobbyReady;
+            GameStateEvents.OnStateChange += GameEvents_OnGameIntro;
         }
 
 
         void OnDestroy()
         {
             LobbyEvents.OnLobbyReady -= LobbyEvents_OnLobbyReady;
+            GameStateEvents.OnStateChange -= GameEvents_OnGameIntro;
         }
 
 
@@ -60,12 +63,29 @@ namespace TextureMod.TMPlayer
             });
         }
 
+        void GameEvents_OnGameIntro(object source, OnStateChangeArgs e)
+        {
+            if (e.newState == GameState.GAME_INTRO)
+            {
+                ForAllLocalTexmodPlayers((tmPlayer) => {
+                    if (tmPlayer.Player.CharacterSelectedIsRandom)
+                    {
+                        tmPlayer.SetRandomCustomSkin();
+                        if (NetworkApi.IsOnline && tmPlayer.HasCustomSkin())
+                        {
+                            ExchangeClient.SendSkinNotice(tmPlayer.CustomSkin.SkinHash);
+                        }
+                    }
+                });
+            }
+        }
+
         void Update()
         {
             for (int i = 0; i < Player.MAX_PLAYERS; i++)
             {
                 Player player = Player.GetPlayer(i);
-                if (player == null)
+                if (player == null || player.playerStatus == PlayerStatus.NONE)
                 {
                     tmPlayers[i] = null;
                 } 
@@ -81,8 +101,8 @@ namespace TextureMod.TMPlayer
                     }
                 }
             }
-            UpdatePlayers();
 
+            UpdatePlayers();
 
             CheckForSkinReload();
         }
@@ -130,18 +150,18 @@ namespace TextureMod.TMPlayer
         }
 
 
-        public static void ForAllLocalTexmodPlayers(Action<TexModPlayer> action)
+        public static void ForAllLocalTexmodPlayers(Action<LocalTexModPlayer> action)
         {
             foreach (TexModPlayer tmPlayer in Instance.tmPlayers)
             {
-                if (tmPlayer != null && tmPlayer is LocalTexModPlayer) action(tmPlayer);
+                if (tmPlayer != null && tmPlayer is LocalTexModPlayer ltmp) action(ltmp);
             }
         }
-        public static void ForAllRemoteTexmodPlayers(Action<TexModPlayer> action)
+        public static void ForAllRemoteTexmodPlayers(Action<RemoteTexModPlayer> action)
         {
             foreach (TexModPlayer tmPlayer in Instance.tmPlayers)
             {
-                if (tmPlayer != null && tmPlayer is RemoteTexModPlayer) action(tmPlayer);
+                if (tmPlayer != null && tmPlayer is RemoteTexModPlayer rtmp) action(rtmp);
             }
         }
 
