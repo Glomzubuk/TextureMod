@@ -129,7 +129,7 @@ namespace TextureMod
         public static ConfigEntry<bool> sendSkinsToOpponents;
         public static ConfigEntry<bool> receiveSkinsFromOpponents;
         public static ConfigEntry<bool> showDebugInfo;
-        public static ConfigEntry<bool> lockButtonsOnRandom;
+        public static ConfigEntry<bool> randomSkinOnRandomSelect;
         public static ConfigEntry<bool> reloadCustomSkinOnInterval;
         public static ConfigEntry<int> skinReloadIntervalInFrames;
         public static ConfigEntry<bool> assignFirstSkinOnCharacterSelection;
@@ -147,7 +147,7 @@ namespace TextureMod
             useOnlySetKey = config.Bind<bool>("TextureChanger", "useOnlySetKey", false);
             sendSkinsToOpponents = config.Bind<bool>("TextureChanger", "sendSkinsToOpponents", true);
             receiveSkinsFromOpponents = config.Bind<bool>("TextureChanger", "receiveSkinsFromOpponents", true);
-            lockButtonsOnRandom = config.Bind<bool>("TextureChanger", "lockButtonsOnRandom", false);
+            randomSkinOnRandomSelect = config.Bind<bool>("TextureChanger", "randomSkinOnRandomSelect", true);
             assignFirstSkinOnCharacterSelection = config.Bind<bool>("TextureChanger", "assignFirstSkinOnCharacterSelection", false);
             config.Bind("TextureChanger", "gap1", 20, new ConfigDescription("",null,"modmenu_gap"));
 

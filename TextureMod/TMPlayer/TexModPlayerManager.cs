@@ -68,10 +68,10 @@ namespace TextureMod.TMPlayer
             if (e.newState == GameState.GAME_INTRO)
             {
                 ForAllLocalTexmodPlayers((tmPlayer) => {
-                    if (tmPlayer.Player.CharacterSelectedIsRandom)
+                    if (tmPlayer.Player.CharacterSelectedIsRandom && TextureMod.randomSkinOnRandomSelect.Value)
                     {
                         tmPlayer.SetRandomCustomSkin();
-                        if (NetworkApi.IsOnline && tmPlayer.HasCustomSkin())
+                        if (NetworkApi.IsOnline && tmPlayer.HasCustomSkin() && TextureMod.sendSkinsToOpponents.Value)
                         {
                             ExchangeClient.SendSkinNotice(tmPlayer.CustomSkin.SkinHash);
                         }
