@@ -97,7 +97,7 @@ namespace TextureMod
 
             if (!TextureMod.IsSkinKeyDown())
             {
-                /*if (player.controller.GetButtonDown(InputAction.SHLEFT) || player.controller.GetButtonDown(InputAction.SHLEFT))
+                if (player.controller.GetButtonDown(InputAction.SHLEFT) || player.controller.GetButtonDown(InputAction.SHRIGHT))
                 {
                     ClearSkinFor(nr);
                 }
@@ -112,7 +112,7 @@ namespace TextureMod
                     {
                         ClearSkinFor(nr);
                     }
-                }*/
+                }
                 return true;
             }
 
