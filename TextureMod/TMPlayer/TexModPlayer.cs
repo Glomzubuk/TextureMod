@@ -132,7 +132,7 @@ namespace TextureMod.TMPlayer
                 {
                     debugstring += $" It had the wrong model.";
                 }
-                Logger.LogDebug(debugstring);
+                //Logger.LogDebug(debugstring);
                 this.ModelHandler = ModelHandler.GetCurrentModelHandler(this.Player.nr);
             }
 

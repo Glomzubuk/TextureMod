@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using GameplayEntities;
 using LLScreen;
@@ -82,7 +83,10 @@ namespace TextureMod
                 if (!materialTexName.Contains("Silhouett") && materialTexName != "")
                 {
                     //r.material.shader = Shader.Find("LethalLeague/GameplayOpaque");
-                    r.material.SetTexture("_MainTex", texture);
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    {
+                        r.material.SetTexture(texName, texture);
+                    }
                 }
             }
 

@@ -357,7 +357,10 @@ namespace TextureMod
             {
                 if (m.name.Contains("bossOmegaGlassMat") || m.name.Contains("bossOmegaEffectMat"))
                 {
-                    m.SetTexture("_MainTex", tex);
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    {
+                        r.material.SetTexture(texName, tex);
+                    }
                     m.SetColor("_LitColor", new Color(arm1.r, arm1.g, arm1.b, bright1.r));
                     m.SetColor("_ShadowColor", new Color(arm2.r, arm2.g, arm2.b, bright2.r));
                     m.SetFloat("_Transparency", alpha.r);
@@ -399,7 +402,10 @@ namespace TextureMod
             {
                 if (m.name.Contains("grafNurseGlass"))
                 {
-                    m.SetTexture("_MainTex", tex);
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    {
+                        r.material.SetTexture(texName, tex);
+                    }
                     m.SetColor("_LitColor", new Color(light.r, light.g, light.b, bright1.r));
                     m.SetColor("_ShadowColor", new Color(shad.r, shad.g, shad.b, bright2.r));
                     m.SetFloat("_Transparency", alpha.r);
@@ -458,7 +464,10 @@ namespace TextureMod
             {
                 if (m.name.Contains("skateScubaGlass"))
                 {
-                    m.SetTexture("_MainTex", tex);
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    {
+                        r.material.SetTexture(texName, tex);
+                    }
                     m.SetColor("_LitColor", new Color(light.r, light.g, light.b, transparency.g));
                     m.SetColor("_ShadowColor", new Color(shad.r, shad.g, shad.b, transparency.b));
                     m.SetFloat("_Transparency", transparency.r);
