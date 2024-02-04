@@ -18,7 +18,7 @@ namespace TextureMod
         public readonly Character character;
         public readonly CharacterVariant variant;
         private List<CharacterModel> models = new List<CharacterModel>();
-        private List<Renderer> renderers = new List<Renderer>();
+        public List<Renderer> Renderers { get; private set; } = new List<Renderer>();
         public Texture2D texture = null;
         public ScreenType type;
 
@@ -32,7 +32,7 @@ namespace TextureMod
 
         public void Add(IEnumerable<Renderer> renderers)
         {
-            this.renderers.AddRange(renderers);
+            this.Renderers.AddRange(renderers);
         }
 
         public void Add(Func<IEnumerable<Renderer>> renderersCallback)
@@ -70,7 +70,7 @@ namespace TextureMod
                 }
                 return false;
             });
-            renderers.AddRange(rs);
+            Renderers.AddRange(rs);
         }
 
         public void Update()
@@ -87,7 +87,7 @@ namespace TextureMod
                 {
                     return;
                 }*/
-                foreach (Renderer r in renderers)
+                foreach (Renderer r in Renderers)
                 {
                     if (r ?? r.isVisible)
                     {

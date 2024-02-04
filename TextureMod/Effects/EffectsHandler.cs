@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace TextureMod
     public static class EffectsHandler
     {
         public static string EffectsFolder => Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
+        public static readonly List<string> validMainTexNames = new List<string> { "_MainTex", "_MainTexture" };
 
         #region Effects
         private static Texture2D candySplashWhite;
@@ -309,32 +311,17 @@ namespace TextureMod
         #region Doombox Effects
         public static void DBEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null)
+            if (tmPlayer.CustomSkin != null)
             {
-                AssignVisualizer(tmPlayer.PlayerEntity, tmPlayer.Texture);
-            }
-        }
-
-        public static void AssignVisualizer(PlayerEntity pe, Texture2D tex)
-        {
-            AssignVisualizer(pe.character, pe.GetVisual("main").mainRenderer, tex);
-        }
-
-        public static void AssignVisualizer(Character character, Renderer r, Texture2D tex)
-        {
-            FNDGCLEDHAD visualizer = r.gameObject.GetComponentInParent<FNDGCLEDHAD>();
-            if (visualizer != null && tex != null)
-            {
-                Color c1 = character == Character.BOSS ? tex.GetPixel(493, 510) : tex.GetPixel(82, 10);
-                Color c2 = character == Character.BOSS ? tex.GetPixel(508, 510) : tex.GetPixel(96, 10);
-                Material vismat = Traverse.Create(visualizer).Field<Material>("FHAMOPAJHNJ").Value;
-                try
+                switch (tmPlayer.CustomSkin.ModelVariant)
                 {
-                    vismat.mainTexture = tex;
-                    vismat.SetColor("_AmpColor0", c1);
-                    vismat.SetColor("_AmpColor1", c2);
+                    case ModelVariant.Alternative:
+                        AssignOmegaDoomboxSmearsAndArms(tmPlayer.ModelHandler.Renderers[0], tmPlayer.Texture);
+                        break;
+                    case ModelVariant.DLC:
+                        AssignVisualizer(tmPlayer.ModelHandler.character, tmPlayer.ModelHandler.Renderers[0], tmPlayer.Texture);
+                        break;
                 }
-                catch { Debug.Log($"Visulizer Broke for a moment and I don't know why ``\\_(-.-)_/``"); }
             }
         }
 
@@ -357,7 +344,7 @@ namespace TextureMod
             {
                 if (m.name.Contains("bossOmegaGlassMat") || m.name.Contains("bossOmegaEffectMat"))
                 {
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => validMainTexNames.Contains(texName)))
                     {
                         r.material.SetTexture(texName, tex);
                     }
@@ -365,6 +352,48 @@ namespace TextureMod
                     m.SetColor("_ShadowColor", new Color(arm2.r, arm2.g, arm2.b, bright2.r));
                     m.SetFloat("_Transparency", alpha.r);
                 }
+            }
+        }
+        #endregion
+
+        #region Sonata Effects
+        public static void SonataEffects(TexModPlayer tmPlayer)
+        {
+            if (tmPlayer.CustomSkin != null)
+            {
+                switch (tmPlayer.CustomSkin.ModelVariant)
+                {
+                    case ModelVariant.DLC:
+                        AssignVisualizer(tmPlayer.ModelHandler.character, tmPlayer.ModelHandler.Renderers[0], tmPlayer.Texture);
+                        break;
+                }
+            }
+        }
+
+
+        #endregion
+
+        #region Visualizer Effects
+        public static void AssignVisualizer(PlayerEntity pe, Texture2D tex)
+        {
+            AssignVisualizer(pe.character, pe.GetVisual("main").mainRenderer, tex);
+        }
+
+        public static void AssignVisualizer(Character character, Renderer r, Texture2D tex)
+        {
+            FNDGCLEDHAD visualizer = r.gameObject.GetComponentInParent<FNDGCLEDHAD>();
+            if (visualizer != null && tex != null)
+            {
+                Color c1 = character == Character.BOSS ? tex.GetPixel(493, 510) : tex.GetPixel(82, 10);
+                Color c2 = character == Character.BOSS ? tex.GetPixel(508, 510) : tex.GetPixel(96, 10);
+                Material vismat = visualizer.FHAMOPAJHNJ;
+                try
+                {
+                    vismat.mainTexture = tex;
+                    vismat.SetColor("_AmpColor0", c1);
+                    vismat.SetColor("_AmpColor1", c2);
+                }
+                catch { Debug.Log($"Visulizer Broke for a moment and I don't know why ``\\_(-.-)_/``"); }
             }
         }
         #endregion
@@ -402,7 +431,7 @@ namespace TextureMod
             {
                 if (m.name.Contains("grafNurseGlass"))
                 {
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => validMainTexNames.Contains(texName)))
                     {
                         r.material.SetTexture(texName, tex);
                     }
@@ -464,7 +493,7 @@ namespace TextureMod
             {
                 if (m.name.Contains("skateScubaGlass"))
                 {
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => validMainTexNames.Contains(texName)))
                     {
                         r.material.SetTexture(texName, tex);
                     }

@@ -6,6 +6,7 @@ Previous Maintainers: Daioutzu
 Current Maintainer: Glomzubuk  
 
 Welcome to the world of simple skins imports, and easy skin creation!
+Here you can get the modified TextureMod base skins for the additionnal effects support: [Skin.Editing.Textures.zip](https://github.com/Daioutzu/LLBMM-TextureMod/releases/download/1.4.9/Skin.Editing.Textures.zip)
 Check out the community skin pack [over here](https://drive.google.com/drive/folders/1y1F2hbE-I4IXfeLJZ73_-tl9AJATSlTY?usp=sharing)!
 
 

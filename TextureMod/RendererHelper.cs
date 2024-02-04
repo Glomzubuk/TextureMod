@@ -83,7 +83,7 @@ namespace TextureMod
                 if (!materialTexName.Contains("Silhouett") && materialTexName != "")
                 {
                     //r.material.shader = Shader.Find("LethalLeague/GameplayOpaque");
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => texName == "_MainTex" || texName == "_MainTexture"))
+                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => EffectsHandler.validMainTexNames.Contains(texName)))
                     {
                         r.material.SetTexture(texName, texture);
                     }

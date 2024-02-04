@@ -77,6 +77,12 @@ namespace TextureMod.TMPlayer
                         this.Player.CharacterVariant = VariantHelper.GetDefaultVariantForModel(CustomSkin.ModelVariant);
                         GameStatesLobbyUtils.RefreshLocalPlayerState();
                     }
+
+                    switch (this.ModelHandler.character)
+                    {
+                        case Character.BOSS: EffectsHandler.DBEffects(this); break;
+                        case Character.BOOM: EffectsHandler.SonataEffects(this); break;
+                    }
                 }
                 if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
                 {
@@ -89,13 +95,15 @@ namespace TextureMod.TMPlayer
             }
             else if (GameStates.IsInMatch() && HasCustomSkin() && PlayerEntity != null && Player.IsInMatch)
             {
-                switch (this.Player.Character)
+                switch (this.ModelHandler.character)
                 {
                     case Character.CANDY: EffectsHandler.CandymanIngameEffects(this); break;
                     case Character.BAG: EffectsHandler.AshesIngameEffects(this); break;
                     case Character.GRAF: EffectsHandler.ToxicIngameEffects(this); break;
                     case Character.ELECTRO: EffectsHandler.GridIngameEffects(this); break;
                     case Character.SKATE: EffectsHandler.JetIngameEffects(this); break;
+                    case Character.BOSS: EffectsHandler.DBEffects(this); break;
+                    case Character.BOOM: EffectsHandler.SonataEffects(this); break;
                 }
             }
         }
