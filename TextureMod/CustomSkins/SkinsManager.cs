@@ -21,7 +21,7 @@ namespace TextureMod.CustomSkins
                 var moddingFolder = TextureMod.ModdingFolder.CreateSubdirectory("Characters");
                 Logger.LogInfo($"Loading Modding folder at: {moddingFolder}");
                 skinCache.LoadSkins(moddingFolder);
-
+                /*
                 var resourcesCharacterFolder = new DirectoryInfo(BepInEx.Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Characters"));
                 Logger.LogInfo($"Loading Resources folder at: {resourcesCharacterFolder}");
                 if (!resourcesCharacterFolder.Exists) resourcesCharacterFolder.Create();
@@ -31,6 +31,7 @@ namespace TextureMod.CustomSkins
                 Logger.LogInfo($"Loading Remote folder at: {remoteCharacterFolder}");
                 if (!remoteCharacterFolder.Exists) remoteCharacterFolder.Create();
                 skinCache.LoadSkins(remoteCharacterFolder);
+                */
             }
             catch (Exception e)
             {
