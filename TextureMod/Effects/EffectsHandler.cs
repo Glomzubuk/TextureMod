@@ -130,12 +130,12 @@ namespace TextureMod
             Color c = new Color(1, 1, 1, 1);
             switch (variant)
             {
-                case CharacterVariant.DEFAULT: c = tex.GetPixel(58, 438); break;
-                case CharacterVariant.ALT0: c = tex.GetPixel(58, 438); break;
-                case CharacterVariant.MODEL_ALT: c = tex.GetPixel(69, 298); break;
-                case CharacterVariant.MODEL_ALT2: c = tex.GetPixel(69, 298); break;
-                case CharacterVariant.MODEL_ALT3: c = tex.GetPixel(113, 334); break;
-                case CharacterVariant.MODEL_ALT4: c = tex.GetPixel(113, 334); break;
+                case CharacterVariant.DEFAULT: c = tex.GetPixel(58 * (tex.width / 512), 438 * (tex.height / 512)); break;
+                case CharacterVariant.ALT0: c = tex.GetPixel(58 * (tex.width / 512), 438 * (tex.height / 512)); break;
+                case CharacterVariant.MODEL_ALT: c = tex.GetPixel(69 * (tex.width / 512), 298 * (tex.height / 512)); break;
+                case CharacterVariant.MODEL_ALT2: c = tex.GetPixel(69 * (tex.width / 512), 298 * (tex.height / 512)); break;
+                case CharacterVariant.MODEL_ALT3: c = tex.GetPixel(113 * (tex.width / 512), 334 * (tex.height / 512)); break;
+                case CharacterVariant.MODEL_ALT4: c = tex.GetPixel(113 * (tex.width / 512), 334 * (tex.height / 512)); break;
             }
 
             if (r.name != "mesh1Outline" && r.name != "mesh1MetalOutline" && r.name != "mesh1TenguOutline" && r.name.Contains("Outline")) r.material.color = c;
@@ -234,7 +234,7 @@ namespace TextureMod
         {
             Renderer r = effect.GetVisual("main").mainRenderer;
             r.material.mainTexture = candySplashWhite;
-            r.material.color = (variant == CharacterVariant.MODEL_ALT3 || variant == CharacterVariant.MODEL_ALT4) ? tex.GetPixel(130, 92) : tex.GetPixel(103, 473);
+            r.material.color = (variant == CharacterVariant.MODEL_ALT3 || variant == CharacterVariant.MODEL_ALT4) ? tex.GetPixel(130 * (tex.width / 512), 92 * (tex.height / 512)) : tex.GetPixel(103 * (tex.width / 512), 473 * (tex.height / 512));
             effect.name = "candySplashModified";
         }
         #endregion
@@ -266,7 +266,7 @@ namespace TextureMod
             Color pixelColor = new Color(1, 1, 1, 1);
 
             //Gets the pixel color from the skin texture at a certain location based on if it's a DLC skin or Normal/Model_Alt
-            pixelColor = (pe.variant <= CharacterVariant.MODEL_ALT2) ? tex.GetPixel(451, 454) : tex.GetPixel(442, 484);
+            pixelColor = (pe.variant <= CharacterVariant.MODEL_ALT2) ? tex.GetPixel(451 * (tex.width / 512), 454 * (tex.height / 512)) : tex.GetPixel(442 * (tex.width / 512), 484 * (tex.height / 512));
 
 
             VisualEntity[] ves = UnityEngine.Object.FindObjectsOfType<VisualEntity>();
@@ -332,13 +332,13 @@ namespace TextureMod
 
         public static void AssignOmegaDoomboxSmearsAndArms(Renderer r, Texture2D tex)
         {
-            Color arm1 = tex.GetPixel(28, 336);
-            Color arm2 = tex.GetPixel(28, 325);
+            Color arm1 = tex.GetPixel(28 * (tex.width / 512), 336 * (tex.height / 512));
+            Color arm2 = tex.GetPixel(28 * (tex.width / 512), 325 * (tex.height / 512));
 
-            Color bright1 = tex.GetPixel(113, 336);
-            Color bright2 = tex.GetPixel(113, 325);
+            Color bright1 = tex.GetPixel(113 * (tex.width / 512), 336 * (tex.height / 512));
+            Color bright2 = tex.GetPixel(113 * (tex.width / 512), 325 * (tex.height / 512));
 
-            Color alpha = tex.GetPixel(178, 332);
+            Color alpha = tex.GetPixel(178 * (tex.width / 512), 332 * (tex.height / 512));
 
             foreach (Material m in r.materials)
             {
@@ -384,8 +384,8 @@ namespace TextureMod
             FNDGCLEDHAD visualizer = r.gameObject.GetComponentInParent<FNDGCLEDHAD>();
             if (visualizer != null && tex != null)
             {
-                Color c1 = character == Character.BOSS ? tex.GetPixel(493, 510) : tex.GetPixel(82, 10);
-                Color c2 = character == Character.BOSS ? tex.GetPixel(508, 510) : tex.GetPixel(96, 10);
+                Color c1 = character == Character.BOSS ? tex.GetPixel(493 * (tex.width / 512), 510 * (tex.height / 512)) : tex.GetPixel(82 * (tex.width / 512), 10 * (tex.height / 512));
+                Color c2 = character == Character.BOSS ? tex.GetPixel(508 * (tex.width / 512), 510 * (tex.height / 512)) : tex.GetPixel(96 * (tex.width / 512), 10 * (tex.height / 512));
                 Material vismat = visualizer.FHAMOPAJHNJ;
                 try
                 {
@@ -419,13 +419,13 @@ namespace TextureMod
 
         public static void AssignNurseToxicCanisters(Renderer r, Texture2D tex)
         {
-            Color light = tex.GetPixel(158, 414);
-            Color shad = tex.GetPixel(158, 406);
+            Color light = tex.GetPixel(158 * (tex.width / 512), 414 * (tex.height / 512));
+            Color shad = tex.GetPixel(158 * (tex.width / 512), 406 * (tex.height / 512));
 
-            Color bright1 = tex.GetPixel(158, 397);
-            Color bright2 = tex.GetPixel(158, 389);
+            Color bright1 = tex.GetPixel(158 * (tex.width / 512), 397 * (tex.height / 512));
+            Color bright2 = tex.GetPixel(158 * (tex.width / 512), 389 * (tex.height / 512));
 
-            Color alpha = tex.GetPixel(158, 380);
+            Color alpha = tex.GetPixel(158 * (tex.width / 512), 380 * (tex.height / 512));
 
             foreach (Material m in r.materials)
             {
@@ -449,7 +449,7 @@ namespace TextureMod
             {
                 if (toxic.player.CJFLMDNNMIE == playerId)
                 {
-                    Color32 c = tex.GetPixel(258, 345);
+                    Color32 c = tex.GetPixel(258 * (tex.width / 512), 345 * (tex.height / 512));
                     c.a = byte.MaxValue;
                     toxic.GetVisual("paintBlobVisual").mainRenderer.material.color = c;
                     toxic.outfitEffectColors[(int)cv] = c;
@@ -484,10 +484,10 @@ namespace TextureMod
 
         public static void AssignJetScubaVisor(Renderer r, Texture2D tex)
         {
-            Color light = tex.GetPixel(60, 328);
-            Color shad = tex.GetPixel(60, 325);
+            Color light = tex.GetPixel(60 * (tex.width / 512), 328 * (tex.height / 512));
+            Color shad = tex.GetPixel(60 * (tex.width / 512), 325 * (tex.height / 512));
 
-            Color transparency = tex.GetPixel(60, 322);
+            Color transparency = tex.GetPixel(60 * (tex.width / 512), 322 * (tex.height / 512));
 
             foreach (Material m in r.materials)
             {
@@ -509,15 +509,15 @@ namespace TextureMod
             Color pixelColor = new Color(0, 1, 1);
             if (variant <= CharacterVariant.ALT6)
             {
-                pixelColor = tex.GetPixel(59, 326);
+                pixelColor = tex.GetPixel(59 * (tex.width / 512), 326 * (tex.height / 512));
             }
             else if (variant == CharacterVariant.MODEL_ALT || variant == CharacterVariant.MODEL_ALT2)
             {
-                pixelColor = tex.GetPixel(59, 306);
+                pixelColor = tex.GetPixel(59 * (tex.width / 512), 306 * (tex.height / 512));
             }
             else if (variant == CharacterVariant.MODEL_ALT3 || variant == CharacterVariant.MODEL_ALT4)
             {
-                pixelColor = tex.GetPixel(59, 388);
+                pixelColor = tex.GetPixel(59 * (tex.width / 512), 388 * (tex.height / 512));
             }
 
             MeshRenderer[] mrs = UnityEngine.Object.FindObjectsOfType<MeshRenderer>();
