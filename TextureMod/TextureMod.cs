@@ -10,6 +10,7 @@ using BepInEx.Configuration;
 using TextureMod.TMPlayer;
 using TextureMod.CustomSkins;
 using TextureMod.Showcase;
+using TextureMod.Effects;
 
 
 namespace TextureMod

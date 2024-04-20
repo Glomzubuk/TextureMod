@@ -7,6 +7,7 @@ using LLBML;
 using LLBML.Players;
 using LLBML.Utils;
 using HarmonyLib;
+using TextureMod.Effects;
 
 namespace TextureMod
 {

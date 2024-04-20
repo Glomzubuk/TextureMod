@@ -13,7 +13,7 @@ using LLBML.Texture;
 using LLBML.States;
 using TextureMod.TMPlayer;
 
-namespace TextureMod
+namespace TextureMod.Effects
 {
     public static class EffectsHandler
     {

@@ -9,6 +9,7 @@ using LLBML;
 using LLBML.Players;
 using LLBML.States;
 using TextureMod.CustomSkins;
+using TextureMod.Effects;
 
 namespace TextureMod.TMPlayer
 {
@@ -51,7 +52,7 @@ namespace TextureMod.TMPlayer
         public bool ShouldRefreshSkin { get; set; }
         public SkinColorFilter SkinColorOverride { get; private set; } = SkinColorFilter.NONE;
 
-        
+
 
         public void SetPlayer(Player player)
         {
@@ -273,7 +274,7 @@ namespace TextureMod.TMPlayer
                     Vector2 labelSizes = GUI.skin.box.CalcSize(content);
 
                     Rect labelBox = new Rect(
-                        labelScreenPos.x - (labelSizes.x / 2), 
+                        labelScreenPos.x - (labelSizes.x / 2),
                         Screen.height - (labelScreenPos.y),
                         labelSizes.x,
                         labelSizes.y

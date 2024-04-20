@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 using LLBML.Texture;
 
 
-namespace TextureMod
+namespace TextureMod.Effects
 {
     public class EffectChanger : MonoBehaviour
     {
