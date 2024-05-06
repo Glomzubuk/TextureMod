@@ -317,6 +317,8 @@ namespace TextureMod.Effects
         {
             if (tmPlayer.CustomSkin != null)
             {
+                if (tmPlayer.ModelHandler.Renderers.Count == 0) return;
+
                 switch (tmPlayer.CustomSkin.ModelVariant)
                 {
                     case ModelVariant.Alternative:
