@@ -48,7 +48,7 @@ namespace TextureMod
 
         public IEnumerator WaitForRenderers(CharacterModel model)
         {
-            yield return WaitForRenderers(() => model?.curModel?.transform?.GetComponentsInChildren<Renderer>());
+            return WaitForRenderers(() => model?.curModel?.transform?.GetComponentsInChildren<Renderer>());
         }
 
         public IEnumerator WaitForRenderers(Func<IEnumerable<Renderer>> renderersCallback)
@@ -89,7 +89,7 @@ namespace TextureMod
                 }*/
                 foreach (Renderer r in Renderers)
                 {
-                    if (r ?? r.isVisible)
+                    if (r != null && r.isVisible)
                     {
                         RendererHelper.AssignTextureToRenderer(r, texture, character, variant);
                     }
@@ -98,7 +98,6 @@ namespace TextureMod
         }
 
         public bool IsObsolete() {
-            
             if(ScreenApi.CurrentScreens[0]?.screenType != type && ScreenApi.CurrentScreens[1]?.screenType != type)
             {
                 return true;
@@ -174,7 +173,7 @@ namespace TextureMod
             throw new NotSupportedException("Got request for a model handler in an unsupported screen.\n" +
                 " - Screens[0].type: " + screenZero?.screenType.ToString() + "\n" +
                 " - Screens[1].type: " + screenOne?.screenType.ToString());
-                */               
+                */
         }
     }
 
