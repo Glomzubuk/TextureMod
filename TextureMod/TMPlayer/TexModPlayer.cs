@@ -31,6 +31,8 @@ namespace TextureMod.TMPlayer
         public CustomSkinHandler skinHandler = null;
         public bool HasCustomSkin() => skinHandler?.CustomSkin != null;
         public CustomSkin CustomSkin => skinHandler?.CustomSkin;
+
+        private Texture2D _texture;
         public Texture2D Texture
         {
             get
@@ -38,11 +40,11 @@ namespace TextureMod.TMPlayer
                 if (SkinColorOverride == SkinColorFilter.NONE)
                     return CustomSkin?.Texture;
                 else
-                    return Texture;
+                    return _texture;
             }
             private set
             {
-                Texture = value;
+                this._texture = value;
             }
         }
         public Character CustomSkinCharacter => CustomSkin?.Character ?? Character.NONE;
