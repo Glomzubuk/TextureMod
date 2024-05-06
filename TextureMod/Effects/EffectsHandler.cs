@@ -582,10 +582,7 @@ namespace TextureMod.Effects
         {
             if (tmPlayer.PlayerEntity && tmPlayer.CustomSkin != null)
             {
-                if (tmPlayer.PlayerEntity.variant <= CharacterVariant.STATIC_ALT)
-                {
-                    AssignNitroChain((CopPlayer)tmPlayer.PlayerEntity, tmPlayer.Texture);
-                }
+                AssignNitroChain((CopPlayer)tmPlayer.PlayerEntity, tmPlayer.Texture);
             }
         }
         public static void AssignNitroChain(CopPlayer cop, Texture2D tex)
