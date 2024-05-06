@@ -104,6 +104,7 @@ namespace TextureMod.TMPlayer
                     case Character.ELECTRO: EffectsHandler.GridIngameEffects(this); break;
                     case Character.SKATE: EffectsHandler.JetIngameEffects(this); break;
                     case Character.BOSS: EffectsHandler.DBEffects(this); break;
+                    case Character.COP: EffectsHandler.NitroIngameEffects(this); break;
                     case Character.BOOM: EffectsHandler.SonataEffects(this); break;
                 }
             }

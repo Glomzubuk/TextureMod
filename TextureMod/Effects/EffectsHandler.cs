@@ -557,5 +557,26 @@ namespace TextureMod.Effects
             }
         }
         #endregion
+
+        #region Nitro Effects
+        public static void NitroIngameEffects(TexModPlayer tmPlayer)
+        {
+            if (tmPlayer.PlayerEntity && tmPlayer.CustomSkin != null)
+            {
+                if (tmPlayer.PlayerEntity.variant <= CharacterVariant.STATIC_ALT)
+                {
+                    AssignNitroChain((CopPlayer)tmPlayer.PlayerEntity, tmPlayer.Texture);
+                }
+            }
+        }
+        public static void AssignNitroChain(CopPlayer cop, Texture2D tex)
+        {
+            GameObject link = cop.chain.chainLink;
+            foreach (Renderer r in link.GetComponentsInChildren<Renderer>())
+            {
+                r.material.mainTexture = tex;
+            }
+        }
+        #endregion
     }
 }
