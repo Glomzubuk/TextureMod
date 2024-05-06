@@ -348,15 +348,32 @@ namespace TextureMod.Effects
 
             foreach (Material m in r.materials)
             {
-                if (m.name.Contains("bossOmegaGlassMat") || m.name.Contains("bossOmegaEffectMat"))
+                if (m.name.Contains("bossOmegaGlass"))
                 {
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => validMainTexNames.Contains(texName)))
+                    foreach (string texName in m.GetTexturePropertyNames().Where((texName) => validMainTexNames.Contains(texName)))
                     {
-                        r.material.SetTexture(texName, tex);
+                        m.SetTexture(texName, tex);
                     }
                     m.SetColor("_LitColor", new Color(arm1.r, arm1.g, arm1.b, bright1.r));
                     m.SetColor("_ShadowColor", new Color(arm2.r, arm2.g, arm2.b, bright2.r));
                     m.SetFloat("_Transparency", alpha.r);
+
+                }
+                else if (m.name.Contains("bossOmegaEffect") || m.name.Contains("bossOmega2Effect"))
+                {
+                    /*
+                    TextureMod.Log.LogDebug($"Material name : {m.name} has Tex properties:");
+                    foreach (var keyword in m.GetTexturePropertyNames())
+                    {
+                        TextureMod.Log.LogDebug($" - {keyword}");
+                    }
+                    */
+                    // TODO glass mat smears
+                    // m.shader = ... "LethalLeague/GameplayTransparent"
+                    m.SetColor("_LitColor", new Color(arm1.r, arm1.g, arm1.b, bright1.r));
+                    m.SetColor("_ShadowColor", new Color(arm2.r, arm2.g, arm2.b, bright2.r));
+                    m.SetFloat("_Transparency", alpha.r);
+
                 }
             }
         }
