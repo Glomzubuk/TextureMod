@@ -406,14 +406,13 @@ namespace TextureMod.Effects
 
         public static void ToxicIngameEffects(TexModPlayer tmPlayer)
         {
-            if (tmPlayer.PlayerEntity != null && tmPlayer.CustomSkin != null && tmPlayer.PlayerEntity.character == Character.GRAF)
+            if (tmPlayer.PlayerEntity == null || tmPlayer.CustomSkin == null) return;
+
+            if (tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
             {
-                if (tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT3 || tmPlayer.PlayerEntity.variant == CharacterVariant.MODEL_ALT4)
-                {
-                    AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.Texture);
-                }
-                AssignToxicEffectColors(tmPlayer.Player.nr, tmPlayer.Texture, tmPlayer.Player.CharacterVariant);
+                AssignNurseToxicCanisters(tmPlayer.PlayerEntity, tmPlayer.Texture);
             }
+            AssignToxicEffectColors(tmPlayer.Player.nr, tmPlayer.Texture, tmPlayer.Player.CharacterVariant);
         }
 
         public static void AssignNurseToxicCanisters(PlayerEntity pe, Texture2D tex)
