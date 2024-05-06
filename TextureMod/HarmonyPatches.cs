@@ -116,11 +116,11 @@ namespace TextureMod
                 return true;
             }
 
-            if (player.controller.GetButtonDown(InputAction.SHLEFT))
+            if (player.controller.GetButtonDown(InputAction.SHLEFT) || (player.nr == Player.LocalPlayerNumber && Input.GetKeyDown(TextureMod.previousSkin.Value)))
             {
                 PreviousSkinFor(nr);
             }
-            if (player.controller.GetButtonDown(InputAction.SHRIGHT))
+            if (player.controller.GetButtonDown(InputAction.SHRIGHT) || (player.nr == Player.LocalPlayerNumber && Input.GetKeyDown(TextureMod.nextSkin.Value)))
             {
                 NextSkinFor(nr);
             }
