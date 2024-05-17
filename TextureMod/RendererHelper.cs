@@ -74,20 +74,15 @@ namespace TextureMod
         {
             if (!r.gameObject.name.EndsWith("Outline"))
             {
-                string materialTexName = r.material.mainTexture?.name ?? "";
                 if (characterVariant == CharacterVariant.STATIC_ALT && r.material.name.Contains("ScreenSpaceNoise"))
                 {
                     AOOJOMIECLD modelValues = JPLELOFJOOH.NEBGBODHHCG(character, characterVariant != CharacterVariant.STATIC_ALT ? characterVariant : CharacterVariant.DEFAULT);
                     r.material = modelValues.DMAMFHLFOJF(0, false);
                 }
 
-                if (!materialTexName.Contains("Silhouett") && materialTexName != "")
+                foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => EffectsHandler.validMainTexNames.Contains(texName)))
                 {
-                    //r.material.shader = Shader.Find("LethalLeague/GameplayOpaque");
-                    foreach (string texName in r.material.GetTexturePropertyNames().Where((texName) => EffectsHandler.validMainTexNames.Contains(texName)))
-                    {
                         r.material.SetTexture(texName, texture);
-                    }
                 }
             }
 
