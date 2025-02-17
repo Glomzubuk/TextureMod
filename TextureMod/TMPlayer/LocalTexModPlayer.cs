@@ -10,24 +10,13 @@ namespace TextureMod.TMPlayer
 {
     public class LocalTexModPlayer : TexModPlayer
     {
-        public static Player LocalLobbyPlayer => Player.GetPlayer(P2P.localPeer?.playerNr ?? 0);
+        public static int localPlayerNr => P2P.localPeer?.playerNr ?? 0;
+        public static Player LocalLobbyPlayer => Player.GetPlayer(localPlayerNr);
         public static PlayerEntity LocalGamePlayerEntity => LocalLobbyPlayer?.playerEntity;
 
-        public static int localPlayerNr => P2P.localPeer?.playerNr ?? 0;
-
         public LocalTexModPlayer(Player player, CustomSkin skin = null)
-            : base(player, skin ?? CheckForStoredSkin(player))
+            : base(player, skin)
         {
-        }
-
-        private static CustomSkin CheckForStoredSkin(Player player)
-        {
-            return null;
-        }
-
-        public override void Update()
-        {
-            base.Update();
         }
 
         private int skinCounter = 0;

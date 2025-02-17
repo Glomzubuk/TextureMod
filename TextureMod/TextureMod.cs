@@ -94,6 +94,16 @@ namespace TextureMod
             if (showcaseStudio == null) showcaseStudio = gameObject.AddComponent<ShowcaseStudio>();
         }
 
+
+        public static byte[] External_GetSkinHashFromPlayer(int nr)
+        {
+            return TexModPlayerManager.GetPlayer(nr).CustomSkin?.SkinHash.Bytes;
+        }
+        public static void External_AssignSkinToPlayer(int nr, byte[] skinHash)
+        {
+            TexModPlayerManager.GetPlayer(nr).SetCustomSkin(SkinsManager.skinCache.GetHandlerFromHash(new SkinHash(skinHash)));
+        }
+
         private void OnGUI()
         {
             /*

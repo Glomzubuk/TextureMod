@@ -88,7 +88,7 @@ namespace TextureMod.TMPlayer
                 if (player == null || player.playerStatus == PlayerStatus.NONE)
                 {
                     tmPlayers[i] = null;
-                } 
+                }
                 else if (tmPlayers[i] == null)
                 {
                     if (player.isLocal)
@@ -140,6 +140,7 @@ namespace TextureMod.TMPlayer
             //TODO DO Checks
             return Instance.tmPlayers[nr];
         }
+
 
         public static void ForAllTexmodPlayers(Action<TexModPlayer> action)
         {
