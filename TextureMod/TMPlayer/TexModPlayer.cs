@@ -90,10 +90,13 @@ namespace TextureMod.TMPlayer
                 if (ScreenApi.CurrentScreens[0] is ScreenPlayers sp)
                 {
                     Camera cam = Camera.main;
-                    PlayersSelection ps = sp.playerSelections[Player.nr];
-                    RectTransform btTeamTr = ps.btTeam.transform as RectTransform;
-                    labelScreenPos = cam.WorldToScreenPoint(btTeamTr.position);
-                    labelScreenPos.y -= btTeamTr.rect.height;
+                    if (cam != null)
+                    {
+                        PlayersSelection ps = sp.playerSelections[Player.nr];
+                        RectTransform btTeamTr = (RectTransform) ps.btTeam.transform;
+                        labelScreenPos = cam.WorldToScreenPoint(btTeamTr.position);
+                        labelScreenPos.y -= btTeamTr.rect.height;
+                    }
                 }
             }
             else if (GameStates.IsInMatch() && HasCustomSkin() && PlayerEntity != null && Player.IsInMatch)
