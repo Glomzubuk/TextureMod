@@ -12,45 +12,6 @@ namespace TextureMod
 {
     public static class SkinSelect_Patches
     {
-        /*
-        [HarmonyPatch(typeof(HPNLMFHPHFD), nameof(HPNLMFHPHFD.ProcessMsg))]
-        [HarmonyPrefix]
-        public static bool ProcessMsg_Prefix(JOFJHDJHJGI __0, Message __1, HPNLMFHPHFD __instance)
-        {
-            if (!Input.GetKey(TextureMod.holdKey1.Value) || __1.msg != Msg.SEL_SKIN ||
-                __instance.CFKCIJCEILI != null || __instance.EFOEMGLHOPL != null)
-            {
-                return true;
-            }
-            int playerNr = __1.playerNr;
-            int selector = (playerNr != -1) ? playerNr : Player.GetLocalPlayer().nr;
-            int index = __1.index;
-            int prevNext = 1;
-            if (index >= 100)
-            {
-                index -= 100;
-                prevNext = -1;
-            }
-            if (selector == index)
-            {
-                TexModPlayer tmPlayer = TexModPlayerManager.GetPlayer(selector);
-                TextureMod.Log.LogDebug($"Selecting new skin for player {selector}, {(prevNext > 0 ? "next" : "previous")}");
-                if (tmPlayer.Player.selected && tmPlayer is LocalTexModPlayer ltmp)
-                {
-                    if (prevNext > 0)
-                    {
-                        ltmp.NextSkin();
-                    }
-                    else
-                    {
-                        ltmp.PreviousSkin();
-                    }
-                }
-            }
-            return false;
-        }
-        */
-
         [HarmonyPatch(typeof(OGKPCMDOMPF), nameof(OGKPCMDOMPF.ProcessMsg))]
         [HarmonyPrefix]
         public static bool GameStatesUnlocks_ProcessMsh_Prefix(JOFJHDJHJGI OHBPPCEFBHI, Message EIMJOIEPMNA)
