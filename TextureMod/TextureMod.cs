@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
-using Steamworks;
 using HarmonyLib;
 using BepInEx;
 using BepInEx.Logging;
@@ -178,10 +177,32 @@ namespace TextureMod
         #region Folders
         private void InitFolders()
         {
-
             ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
             ModdingFolder = LLBML.Utils.ModdingFolder.GetModSubFolder(this.Info);
-            EffectFolder = Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
+            EffectFolder = Utility.CombinePaths(ModdingFolder.FullName, "Effects");
+
+            if (!Directory.Exists(EffectFolder))
+            {
+                ExtractEffects(EffectFolder);
+            }
+        }
+
+        private void ExtractEffects(string path)
+        {
+            var resources = new DirectoryInfo(ResourceFolder);
+            var files = resources.GetFiles("*effects.tar.gz");
+            if (files.Length == 0)
+            {
+                Logger.LogError("Failed to find the effects archive.");
+                return;
+            }
+
+            var effectDir = Directory.CreateDirectory(path);
+            foreach (FileInfo file in files)
+            {
+                Logger.LogDebug($"Extracting effects: {file.FullName}.");
+                TarUtils.TarUtils.ExtractTarGz(file.FullName, effectDir.FullName);
+            }
         }
         #endregion
     }

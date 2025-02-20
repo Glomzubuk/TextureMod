@@ -18,7 +18,7 @@ namespace TextureMod.Effects
 {
     public static class EffectsHandler
     {
-        public static string EffectsFolder => Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
+        public static string EffectsFolder => TextureMod.EffectFolder;
         public static readonly List<string> validMainTexNames = new List<string> { "_MainTex", "_MainTexture" };
 
         #region Effects

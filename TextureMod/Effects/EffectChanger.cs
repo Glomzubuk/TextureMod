@@ -11,7 +11,7 @@ namespace TextureMod.Effects
 {
     public class EffectChanger : MonoBehaviour
     {
-        public static string effectsFolder = Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
+        public static string EffectsFolder = TextureMod.EffectFolder;
 
         #region Parry and clash effects
         Texture2D parryActiveBG;
@@ -48,7 +48,7 @@ namespace TextureMod.Effects
 
         private void Start()
         {
-            string parryFolder = Path.Combine(effectsFolder, "Parry");
+            string parryFolder = Path.Combine(EffectsFolder, "Parry");
             parryActiveBG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveBG.png"));
             parryActiveMG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveMG.png"));
             parryActiveFG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parryActiveFG.png"));
@@ -61,7 +61,7 @@ namespace TextureMod.Effects
             parrySuccessMG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parrySuccessMG.png"));
             parrySuccessFG = TextureUtils.LoadPNG(Path.Combine(parryFolder, "parrySuccessFG.png"));
 
-            string clashFolder = Path.Combine(effectsFolder, "Clash");
+            string clashFolder = Path.Combine(EffectsFolder, "Clash");
             clashBG = TextureUtils.LoadPNG(Path.Combine(clashFolder, "clashEffectBG.png"));
             clashFG = TextureUtils.LoadPNG(Path.Combine(clashFolder, "clashEffectFG.png"));
 
