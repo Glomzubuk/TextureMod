@@ -40,8 +40,9 @@ namespace TextureMod
         #endregion
 
         #region pathes
-        public static string ResourceFolder { get; private set; }
         public static DirectoryInfo ModdingFolder { get; private set; }
+        public static string ResourceFolder { get; private set; }
+        public static string EffectFolder { get; private set; }
         #endregion
 
         internal static bool IsSkinKeyDown() => Input.GetKey(holdKey1.Value);
@@ -50,11 +51,10 @@ namespace TextureMod
         public void Awake()
         {
             Logger.LogInfo("Hello, World!");
-            ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
-            ModdingFolder = LLBML.Utils.ModdingFolder.GetModSubFolder(this.Info);
             Instance = this;
             Log = this.Logger;
             InitConfig();
+            InitFolders();
 
 
             var harmoInstance = new Harmony(PluginInfos.PLUGIN_ID);
@@ -172,6 +172,16 @@ namespace TextureMod
             config.Bind("TextureChanger", "general_header", "General:", new ConfigDescription("", null, "modmenu_header"));
             showDebugInfo = config.Bind<bool>("TextureChanger", "showDebugInfo", false);
             config.Bind("TextureChanger", "gap3", 20, new ConfigDescription("", null, "modmenu_gap"));
+        }
+        #endregion
+
+        #region Folders
+        private void InitFolders()
+        {
+
+            ResourceFolder = Utility.CombinePaths(Path.GetDirectoryName(this.Info.Location), "TextureModResources");
+            ModdingFolder = LLBML.Utils.ModdingFolder.GetModSubFolder(this.Info);
+            EffectFolder = Utility.CombinePaths(TextureMod.ResourceFolder, "Images", "Effects");
         }
         #endregion
     }
