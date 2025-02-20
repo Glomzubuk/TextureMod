@@ -4,9 +4,11 @@ using UnityEngine;
 using LLHandlers;
 using LLScreen;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using LLBML;
 using LLBML.States;
 using TextureMod.CustomSkins;
+using Logger = UnityEngine.Logger;
 
 
 namespace TextureMod.Showcase
@@ -20,6 +22,7 @@ namespace TextureMod.Showcase
         private ConfigEntry<KeyCode> showcaseStudioMoveCamera;
 
         public static ShowcaseStudio Instance { get; private set; }
+        public static ManualLogSource Logger => TextureMod.Log;
         public bool showUI = true;
         public string SkinName => CustomSkin?.Name ?? "N/A";
         public int refreshTimer = 0;
@@ -226,24 +229,32 @@ namespace TextureMod.Showcase
                     ShowStudio();
                 }
 
-                if (characterModel == null) characterModel = SUS.previewModel;
+                if (characterModel == null)
+                {
+                    characterModel = SUS.previewModel;
+                }
                 else
                 {
                     Animation anim = characterModel.gameObject.GetComponentInChildren<Animation>();
-                    if (anim.clip.name != currentAnimation && !showUI)
-                    {
-                        anim.clip = anim[currentAnimation].clip;
-                    }
-
-                    if (animate)
-                    {
-                        if (animationTime >= anim[currentAnimation].length) animationTime = 0f;
-                        animationTime += (animationSpeed / 60f) * Time.deltaTime;
-                        anim[currentAnimation].normalizedTime = animationTime / anim[currentAnimation].length;
-                    }
+                    if (anim == null) Logger.LogError($"characterModel {characterModel} has no Animation components");
                     else
                     {
-                        anim[currentAnimation].normalizedTime = animationPos;
+                        if (anim.clip.name != currentAnimation && !showUI)
+                        {
+                            anim.clip = anim[currentAnimation].clip;
+                        }
+
+                        if (animate)
+                        {
+                            if (animationTime >= anim[currentAnimation].length) animationTime = 0f;
+                            animationTime += (animationSpeed / 60f) * Time.deltaTime;
+                            anim[currentAnimation].normalizedTime = animationTime / anim[currentAnimation].length;
+                        }
+                        else
+                        {
+                            anim[currentAnimation].normalizedTime = animationPos;
+                        }
+
                     }
                 }
 
